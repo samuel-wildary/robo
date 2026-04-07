@@ -81,6 +81,22 @@
               "media_path": "audio1.ogg"
             },
             {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "media",
+              "media_path": "foto1.jpg"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "media",
+              "media_path": "foto2.jpg"
+            },
+            {
               "type": "presence",
               "presence": "composing"
             },
