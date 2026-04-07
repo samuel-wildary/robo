@@ -23,6 +23,9 @@ class WhatsAppApiClient:
             payload["caption"] = caption
         if media_type:
             payload["type"] = media_type
+            payload["mediatype"] = media_type
+            if media_type == "audio":
+                payload["ptt"] = True
         return self._post("/message/media", payload)
 
     def send_presence(self, to: str, presence: str) -> dict[str, Any]:
