@@ -21,7 +21,10 @@ class WhatsAppApiClient:
         return self._post("/message/media", payload)
 
     def send_presence(self, to: str, presence: str) -> dict[str, Any]:
-        return self._post("/message/presence", {"to": to, "presence": presence})
+        try:
+            return self._post("/message/presence", {"to": to, "presence": presence})
+        except Exception:
+            return {"ok": False, "error": "ignored presence error"}
 
     def mark_read(self, chat_id: str) -> dict[str, Any]:
         return self._post("/message/read", {"chatId": chat_id})

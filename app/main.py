@@ -79,6 +79,6 @@ def webhook(payload: dict[str, Any]) -> dict[str, Any]:
         flow_engine.handle_incoming_message(chat_id=chat_id, message_text=message_text)
     except Exception as exc:  # pragma: no cover - log de runtime
         logger.exception("Erro ao processar webhook")
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        return {"status": "error", "detail": str(exc)}
 
     return {"status": "processed"}
