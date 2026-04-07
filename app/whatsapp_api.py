@@ -21,6 +21,8 @@ class WhatsAppApiClient:
         payload: dict[str, Any] = {"to": to, "mediaUrl": media_url}
         if caption:
             payload["caption"] = caption
+        if media_type:
+            payload["mediaType"] = media_type
         return self._post("/message/media", payload)
 
     def send_presence(self, to: str, presence: str) -> dict[str, Any]:
