@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.config import get_settings
 from app.flow_engine import FlowEngine
@@ -33,13 +33,37 @@ flow_engine = FlowEngine(
     public_base_url=settings.public_base_url,
 )
 
-# Registrar MIME types corretos para audio
-mimetypes.add_type("audio/ogg", ".ogg")
-mimetypes.add_type("audio/mpeg", ".mp3")
-mimetypes.add_type("audio/mp4", ".m4a")
+# MIME types para que a API de WhatsApp reconheça corretamente
+MIME_MAP = {
+    ".ogg": "audio/ogg; codecs=opus",
+    ".mp3": "audio/mpeg",
+    ".m4a": "audio/mp4",
+    ".wav": "audio/wav",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".mp4": "video/mp4",
+    ".pdf": "application/pdf",
+}
+
+ASSETS_DIR = Path("assets")
 
 app = FastAPI(title="Robo de Atendimento WhatsApp")
-app.mount("/assets", StaticFiles(directory=Path("assets")), name="assets")
+
+
+@app.get("/assets/{filename}")
+def serve_asset(filename: str) -> FileResponse:
+    """Serve arquivos de assets com Content-Type correto."""
+    file_path = ASSETS_DIR / filename
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Arquivo nao encontrado.")
+
+    suffix = file_path.suffix.lower()
+    media_type = MIME_MAP.get(suffix, "application/octet-stream")
+    logger.info("Servindo %s com Content-Type: %s", filename, media_type)
+    return FileResponse(path=file_path, media_type=media_type, filename=filename)
 
 
 @app.on_event("startup")

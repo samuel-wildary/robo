@@ -21,27 +21,6 @@ class WhatsAppApiClient:
         payload: dict[str, Any] = {"to": to, "mediaUrl": media_url}
         if caption:
             payload["caption"] = caption
-
-        # Áudio vai por endpoint dedicado
-        if media_type == "audio":
-            return self.send_audio(to=to, media_url=media_url)
-
-        if media_type:
-            payload["type"] = media_type
-            payload["mediatype"] = media_type
-        return self._post("/message/media", payload)
-
-    def send_audio(self, to: str, media_url: str) -> dict[str, Any]:
-        """Envia audio como mensagem de voz (PTT)."""
-        payload: dict[str, Any] = {
-            "to": to,
-            "mediaUrl": media_url,
-            "type": "audio",
-            "mediatype": "audio",
-            "mimetype": "audio/ogg; codecs=opus",
-            "ptt": True,
-            "fileName": "audio.ogg",
-        }
         return self._post("/message/media", payload)
 
     def send_presence(self, to: str, presence: str) -> dict[str, Any]:
