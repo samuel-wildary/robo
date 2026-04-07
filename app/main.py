@@ -56,6 +56,7 @@ def reload_flows() -> dict[str, str]:
 
 @app.post("/webhook")
 def webhook(payload: dict[str, Any]) -> dict[str, Any]:
+    logger.info("=== WEBHOOK PAYLOAD COMPLETO === %s", payload)
     event_name = payload.get("event")
     data = payload.get("data") or {}
 
