@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 
 class WhatsAppApiClient:
@@ -24,6 +27,7 @@ class WhatsAppApiClient:
         try:
             return self._post("/message/presence", {"to": to, "presence": presence})
         except Exception:
+            logger.warning("Presence ignorado (API nao suporta ou erro).")
             return {"ok": False, "error": "ignored presence error"}
 
     def mark_read(self, chat_id: str) -> dict[str, Any]:
@@ -35,13 +39,26 @@ class WhatsAppApiClient:
                 "WHATSAPP_INSTANCE_TOKEN nao configurado. Defina a variavel no arquivo .env."
             )
 
+        url = f"{self.base_url}{path}"
+        logger.info(">>> ENVIANDO para %s | payload: %s", url, payload)
+
         response = requests.post(
-            f"{self.base_url}{path}",
+            url,
             json=payload,
             headers={"X-Instance-Token": self.instance_token},
             timeout=self.timeout_seconds,
         )
-        response.raise_for_status()
+
+        if not response.ok:
+            logger.error(
+                "<<< ERRO %s de %s | corpo: %s",
+                response.status_code,
+                url,
+                response.text[:500],
+            )
+            response.raise_for_status()
+
+        logger.info("<<< OK %s | resposta: %s", response.status_code, response.text[:200])
 
         if not response.content:
             return {"ok": True}
