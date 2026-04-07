@@ -32,20 +32,17 @@ class WhatsAppApiClient:
         return self._post("/message/media", payload)
 
     def send_audio(self, to: str, media_url: str) -> dict[str, Any]:
-        """Envia audio como mensagem de voz (PTT) pelo endpoint dedicado."""
+        """Envia audio como mensagem de voz (PTT)."""
         payload: dict[str, Any] = {
             "to": to,
             "mediaUrl": media_url,
+            "type": "audio",
+            "mediatype": "audio",
+            "mimetype": "audio/ogg; codecs=opus",
             "ptt": True,
+            "fileName": "audio.ogg",
         }
-        # Tenta /message/audio primeiro
-        try:
-            return self._post("/message/audio", payload)
-        except Exception:
-            logger.warning("Endpoint /message/audio falhou, tentando /message/media com ptt...")
-            payload["type"] = "audio"
-            payload["mediatype"] = "audio"
-            return self._post("/message/media", payload)
+        return self._post("/message/media", payload)
 
     def send_presence(self, to: str, presence: str) -> dict[str, Any]:
         try:

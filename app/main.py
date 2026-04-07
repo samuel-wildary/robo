@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import mimetypes
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,11 @@ flow_engine = FlowEngine(
     client=api_client,
     public_base_url=settings.public_base_url,
 )
+
+# Registrar MIME types corretos para audio
+mimetypes.add_type("audio/ogg", ".ogg")
+mimetypes.add_type("audio/mpeg", ".mp3")
+mimetypes.add_type("audio/mp4", ".m4a")
 
 app = FastAPI(title="Robo de Atendimento WhatsApp")
 app.mount("/assets", StaticFiles(directory=Path("assets")), name="assets")
