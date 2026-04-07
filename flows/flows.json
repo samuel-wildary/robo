@@ -1,0 +1,300 @@
+{
+  "default_actions": [
+    {
+      "type": "text",
+      "text": "Não entendi sua mensagem. Envie 'oi' para iniciar o atendimento."
+    }
+  ],
+  "flows": [
+    {
+      "id": "funil_gelatina",
+      "triggers": ["oi", "ola", "olá", "interesse", "informação", "informações", "info", "receita", "gelatina", "eu quero", "quero", "bom dia", "boa tarde", "boa noite"],
+      "entry_step": "boas_vindas",
+      "steps": {
+        "boas_vindas": {
+          "actions": [
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "text",
+              "text": "Sou a Júlia Receitas, espero que você esteja bem. 🙏 Salva meu contato, já salvei o seu\n\nEssa Gelatina Bariátrica que vou te passar é poderosa de verdade!\n\nPreparei um passo a passo completo mostrando como fazer e usar.🍮"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 3
+            },
+            {
+              "type": "text",
+              "text": "Esses são os benefícios👇\n\n✔️ Elimina 7 a 15kg por mês\n✔️ Aumenta sua autoestima\n✔️ Reduz a ansiedade\n✔️ Abaixa o colesterol\n✔️ Aumenta Libido\n✔️ Elimina gordura no fígado\n✔️ Acelera o metabolismo\n✔️ Melhora seu bem estar\n✔️ Aumenta a imunidade\n✔️ inibe o apetite\n\n❤ 100% Seguro: Pode ser usado por qualquer pessoa, diabéticos e hipertensos. Por ser natural, só traz benefícios!\n\n🛒 Fácil de fazer: Ingredientes baratos que você acha em qualquer mercadinho"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "text",
+              "text": "Você quer eliminar quantos quilos ou perder barriga?"
+            }
+          ],
+          "transitions": {
+            "*": "confirmacao"
+          }
+        },
+        "confirmacao": {
+          "actions": [
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "text",
+              "text": "Isso é totalmente possível! E vai transformar a forma que você se vê no espelho."
+            },
+            {
+              "type": "presence",
+              "presence": "recording"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "media",
+              "media_path": "audio1.ogg"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 3
+            },
+            {
+              "type": "text",
+              "text": "Se elas conseguiram, você também consegue! 🙏"
+            },
+            {
+              "type": "presence",
+              "presence": "recording"
+            },
+            {
+              "type": "wait",
+              "seconds": 3
+            },
+            {
+              "type": "media",
+              "media_path": "audio2.ogg"
+            },
+            {
+              "type": "presence",
+              "presence": "recording"
+            },
+            {
+              "type": "wait",
+              "seconds": 3
+            },
+            {
+              "type": "media",
+              "media_path": "audio3.ogg"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "text",
+              "text": "Ouça e me responda pra eu ja te enviar a receita esse áudio é muito importante.👇"
+            },
+            {
+              "type": "presence",
+              "presence": "recording"
+            },
+            {
+              "type": "wait",
+              "seconds": 3
+            },
+            {
+              "type": "media",
+              "media_path": "audio4.ogg"
+            }
+          ],
+          "transitions": {
+            "*": "entrega_receita"
+          }
+        },
+        "entrega_receita": {
+          "actions": [
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 1
+            },
+            {
+              "type": "text",
+              "text": "Certinho 😉"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "text",
+              "text": "Aqui a Receita, Siga o modo de uso certinho. \nOs ingredientes você encontra em  lojas de Produtos Naturais 👇👇"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 3
+            },
+            {
+              "type": "text",
+              "text": "🍮✨ GELATINA BARIÁTRICA \n\n🧾 Ingredientes\n\n💧 250 ml de água quente\n💧 250 ml de água gelada\n🍮 1 envelope de gelatina sem sabor (12g)\n\n🟡 1 colher de sopa cheia de linhaça dourada (bem triturada)\n\n🟤 1 colher de chá rasa de psyllium\n\n⚪ 1 colher de chá de adoçante culinário zero\n➡️ eritritol, stevia ou xilitol\n\n🍋 Suco de 1 limão (opcional — dá sabor e melhora o gosto)\n\n🍎 1 colher de chá de vinagre de maçã\n\nModo de preparo \n\n (Passo a passo)\n\n1️⃣ Ferva 250 ml de água 🔥\n \n2️⃣ Em uma tigela, coloque:\n\n🍮 1 envelope de gelatina sem sabor\n\n3️⃣ Adicione a água quente e mexa bem 🥄✨\n\n➡️ até dissolver totalmente\n\n4️⃣ Espere ficar morno e adicione:\n\n🟡 1 colher de sopa de linhaça dourada triturada\nMisture bem \n\n5️⃣ Acrescente:\n💧 250 ml de água gelada ❄️\n\n6️⃣ Misture e leve à geladeira por cerca de 2 a 3 horas."
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "text",
+              "text": "A Receita tá acima 👆👆👆"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "text",
+              "text": "Peço que siga por 4 a 6 semanas direitinho e beba pelo menos 2 litros de água por dia."
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 3
+            },
+            {
+              "type": "text",
+              "text": "E o pix da taxa é esse \n\nChave pix Celular 👇"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 1
+            },
+            {
+              "type": "text",
+              "text": "31995444162"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "text",
+              "text": "Tá no nome do meu esposo \n\nMaike Panetto Maia"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "text",
+              "text": "R$ 25 💛\nR$ 30 🧡\nR$ 35 ❤️\n\nEscolha o valor que fizer sentido pra você e contribua com o que sentir no coração para apoiar esse projeto 💖"
+            },
+            {
+              "type": "presence",
+              "presence": "composing"
+            },
+            {
+              "type": "wait",
+              "seconds": 2
+            },
+            {
+              "type": "text",
+              "text": "Só não esquece de tirar uma foto pra você mesma , antes de começar a tomar, tá bom?\n\nPra gente ir acompanhando os resultados."
+            },
+            {
+              "type": "presence",
+              "presence": "recording"
+            },
+            {
+              "type": "wait",
+              "seconds": 3
+            },
+            {
+              "type": "media",
+              "media_path": "audio5.ogg"
+            },
+            {
+              "type": "presence",
+              "presence": "recording"
+            },
+            {
+              "type": "wait",
+              "seconds": 3
+            },
+            {
+              "type": "media",
+              "media_path": "audio6.ogg"
+            }
+          ],
+          "end": true
+        }
+      }
+    }
+  ]
+}
