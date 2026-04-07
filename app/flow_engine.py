@@ -159,10 +159,12 @@ class FlowEngine:
 
             if action_type == "media":
                 media_url = self._resolve_media_url(action)
+                media_type = self._detect_media_type(action)
                 self.client.send_media(
                     to=to,
                     media_url=media_url,
                     caption=action.get("caption"),
+                    media_type=media_type,
                 )
                 continue
 
@@ -181,3 +183,17 @@ class FlowEngine:
             return f"{self.public_base_url}/assets/{media_path}"
 
         raise ValueError("Acao de media precisa de 'media_url' ou 'media_path'.")
+
+    @staticmethod
+    def _detect_media_type(action: dict[str, Any]) -> str:
+        """Detecta o tipo de midia pela extensao do arquivo."""
+        path = action.get("media_path", "") or action.get("media_url", "")
+        path_lower = path.lower()
+
+        if path_lower.endswith((".ogg", ".mp3", ".wav", ".aac", ".m4a", ".opus")):
+            return "audio"
+        if path_lower.endswith((".jpg", ".jpeg", ".png", ".gif", ".webp")):
+            return "image"
+        if path_lower.endswith((".mp4", ".avi", ".mov", ".mkv")):
+            return "video"
+        return "document"

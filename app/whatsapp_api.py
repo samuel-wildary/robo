@@ -17,10 +17,12 @@ class WhatsAppApiClient:
     def send_text(self, to: str, text: str) -> dict[str, Any]:
         return self._post("/message/text", {"to": to, "text": text})
 
-    def send_media(self, to: str, media_url: str, caption: str | None = None) -> dict[str, Any]:
+    def send_media(self, to: str, media_url: str, caption: str | None = None, media_type: str | None = None) -> dict[str, Any]:
         payload: dict[str, Any] = {"to": to, "mediaUrl": media_url}
         if caption:
             payload["caption"] = caption
+        if media_type:
+            payload["type"] = media_type
         return self._post("/message/media", payload)
 
     def send_presence(self, to: str, presence: str) -> dict[str, Any]:
