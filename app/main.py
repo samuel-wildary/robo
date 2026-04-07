@@ -5,7 +5,7 @@ import mimetypes
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 
 from app.config import get_settings
@@ -85,7 +85,7 @@ def reload_flows() -> dict[str, str]:
 
 
 @app.post("/webhook")
-def webhook(payload: dict[str, Any]) -> dict[str, Any]:
+def webhook(payload: dict[str, Any], background_tasks: BackgroundTasks) -> dict[str, Any]:
     logger.info("=== WEBHOOK PAYLOAD COMPLETO === %s", payload)
     event_name = payload.get("event")
     data = payload.get("data") or {}
@@ -115,9 +115,14 @@ def webhook(payload: dict[str, Any]) -> dict[str, Any]:
     logger.info("Telefone real: %s | Sessao: %s | Mensagem: %s", phone, session_id, message_text)
 
     try:
-        flow_engine.handle_incoming_message(chat_id=session_id, phone=phone, message_text=message_text)
+        background_tasks.add_task(
+            flow_engine.handle_incoming_message,
+            chat_id=session_id,
+            phone=phone,
+            message_text=message_text
+        )
     except Exception as exc:  # pragma: no cover - log de runtime
-        logger.exception("Erro ao processar webhook")
+        logger.exception("Erro ao colocar webhoook processing task in background")
         return {"status": "error", "detail": str(exc)}
 
     return {"status": "processed"}
