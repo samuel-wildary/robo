@@ -1,10 +1,5 @@
 {
-  "default_actions": [
-    {
-      "type": "text",
-      "text": "Não entendi sua mensagem. Envie 'oi' para iniciar o atendimento."
-    }
-  ],
+  "default_actions": [],
   "flows": [
     {
       "id": "funil_gelatina",

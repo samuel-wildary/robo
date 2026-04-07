@@ -55,6 +55,10 @@ class FlowEngine:
         existing_session = self.session_store.get_session(chat_id)
 
         if existing_session:
+            if existing_session.get("flow_id") == "__COMPLETED__":
+                logger.info("Sessao ja concluida para %s. Ignorando mensagem.", chat_id)
+                return
+
             flow = self._get_flow_by_id(existing_session["flow_id"])
             if flow:
                 current_step = self._get_step(flow, existing_session["step_id"])
@@ -132,7 +136,8 @@ class FlowEngine:
         self._execute_actions(step.get("actions", []), chat_id)
 
         if step.get("end"):
-            self.session_store.clear_session(chat_id)
+            logger.info("Fluxo concluido para %s. Marcando estado como COMPLETED.", chat_id)
+            self.session_store.set_session(chat_id, "__COMPLETED__", "__COMPLETED__")
             return
 
         next_waiting_step = step.get("next_step", step_id)
