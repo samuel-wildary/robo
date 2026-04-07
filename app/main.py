@@ -63,6 +63,9 @@ def webhook(payload: dict[str, Any]) -> dict[str, Any]:
     if event_name != "message":
         return {"status": "ignored", "reason": f"evento {event_name!r} nao tratado"}
 
+    if data.get("isGroup"):
+        return {"status": "ignored", "reason": "mensagem de grupo"}
+
     if data.get("from", "").endswith("@g.us"):
         return {"status": "ignored", "reason": "mensagem de grupo"}
 
@@ -70,14 +73,19 @@ def webhook(payload: dict[str, Any]) -> dict[str, Any]:
     if message_type not in {"chat", "conversation", "text"}:
         return {"status": "ignored", "reason": f"tipo {message_type!r} nao tratado"}
 
-    chat_id = data.get("from")
+    # Usa resolvedPhone (telefone real) para enviar mensagens
+    # Usa 'from' (LID) apenas como chave de sessão
+    phone = data.get("resolvedPhone") or data.get("from", "")
+    session_id = data.get("from", "")
     message_text = data.get("body", "")
 
-    if not chat_id:
-        raise HTTPException(status_code=400, detail="Payload sem campo 'data.from'.")
+    if not phone:
+        raise HTTPException(status_code=400, detail="Payload sem telefone do remetente.")
+
+    logger.info("Telefone real: %s | Sessao: %s | Mensagem: %s", phone, session_id, message_text)
 
     try:
-        flow_engine.handle_incoming_message(chat_id=chat_id, message_text=message_text)
+        flow_engine.handle_incoming_message(chat_id=session_id, phone=phone, message_text=message_text)
     except Exception as exc:  # pragma: no cover - log de runtime
         logger.exception("Erro ao processar webhook")
         return {"status": "error", "detail": str(exc)}
