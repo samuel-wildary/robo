@@ -47,12 +47,16 @@ class FlowEngine:
     def reload(self) -> None:
         self.load()
 
-    def handle_incoming_message(self, chat_id: str, message_text: str, phone: str | None = None) -> None:
+    def handle_incoming_message(self, chat_id: str, message_text: str, phone: str | None = None, ctwa_clid: str = "") -> None:
         # phone = numero real para enviar mensagens
         # chat_id = identificador de sessao (LID)
-        self._current_phone = phone or chat_id
+        resolved_phone = phone or chat_id
         normalized_message = normalize_text(message_text)
         existing_session = self.session_store.get_session(chat_id)
+
+        # Salva ctwa_clid na sessão se veio de um anúncio (só salva uma vez)
+        if ctwa_clid and existing_session:
+            self.session_store.set_ctwa_clid(chat_id, ctwa_clid)
 
         if existing_session:
             if existing_session.get("is_executing") is True:
@@ -69,22 +73,25 @@ class FlowEngine:
                 if current_step:
                     next_step = self._resolve_transition(current_step, normalized_message)
                     if next_step:
-                        self._execute_step(flow, next_step, chat_id)
+                        self._execute_step(flow, next_step, chat_id, resolved_phone)
                         return
 
                     fallback_actions = current_step.get("fallback_actions") or []
                     if fallback_actions:
-                        self._execute_actions(fallback_actions, chat_id)
+                        self._execute_actions(fallback_actions, chat_id, resolved_phone)
                         return
 
         flow = self._match_flow(normalized_message)
         if flow:
-            self._execute_step(flow, flow["entry_step"], chat_id)
+            self._execute_step(flow, flow["entry_step"], chat_id, resolved_phone)
+            # Salva ctwa_clid após criar a sessão (caso seja a primeira mensagem)
+            if ctwa_clid:
+                self.session_store.set_ctwa_clid(chat_id, ctwa_clid)
             return
 
         default_actions = self.flow_definition.get("default_actions") or []
         if default_actions:
-            self._execute_actions(default_actions, chat_id)
+            self._execute_actions(default_actions, chat_id, resolved_phone)
 
     def _match_flow(self, normalized_message: str) -> dict[str, Any] | None:
         for flow in self.flow_definition.get("flows", []):
@@ -130,7 +137,7 @@ class FlowEngine:
 
         return None
 
-    def _execute_step(self, flow: dict[str, Any], step_id: str, chat_id: str) -> None:
+    def _execute_step(self, flow: dict[str, Any], step_id: str, chat_id: str, phone: str) -> None:
         step = self._get_step(flow, step_id)
         if not step:
             logger.warning("Step '%s' nao encontrado no fluxo '%s'.", step_id, flow.get("id"))
@@ -139,7 +146,7 @@ class FlowEngine:
 
         self.session_store.set_session(chat_id, flow["id"], step_id, is_executing=True)
 
-        self._execute_actions(step.get("actions", []), chat_id)
+        self._execute_actions(step.get("actions", []), chat_id, phone)
 
         if step.get("end"):
             logger.info("Fluxo concluido para %s. Marcando estado como COMPLETED.", chat_id)
@@ -149,8 +156,8 @@ class FlowEngine:
         next_waiting_step = step.get("next_step", step_id)
         self.session_store.set_session(chat_id, flow["id"], next_waiting_step, is_executing=False)
 
-    def _execute_actions(self, actions: list[dict[str, Any]], chat_id: str) -> None:
-        to = extract_phone(getattr(self, '_current_phone', None) or chat_id)
+    def _execute_actions(self, actions: list[dict[str, Any]], chat_id: str, phone: str) -> None:
+        to = extract_phone(phone or chat_id)
         logger.info("Executando acoes para telefone: %s", to)
         for action in actions:
             action_type = action.get("type")

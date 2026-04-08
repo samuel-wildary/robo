@@ -99,6 +99,9 @@ def webhook(payload: dict[str, Any], background_tasks: BackgroundTasks) -> dict[
     if data.get("from", "").endswith("@g.us"):
         return {"status": "ignored", "reason": "mensagem de grupo"}
 
+    if data.get("fromMe"):
+        return {"status": "ignored", "reason": "mensagem propria (fromMe)"}
+
     message_type = data.get("type")
     if message_type not in {"chat", "conversation", "text"}:
         return {"status": "ignored", "reason": f"tipo {message_type!r} nao tratado"}
@@ -108,6 +111,15 @@ def webhook(payload: dict[str, Any], background_tasks: BackgroundTasks) -> dict[
     phone = data.get("resolvedPhone") or data.get("from", "")
     session_id = data.get("from", "")
     message_text = data.get("body", "")
+
+    # CTWA (Click to WhatsApp) ad tracking
+    ctwa_clid = data.get("ctwaClid", "")
+    if ctwa_clid:
+        logger.info("📢 CTWA Click ID detectado: %s | Telefone: %s", ctwa_clid, phone)
+        entry_source = data.get("entryPointConversionSource", "")
+        entry_app = data.get("entryPointConversionApp", "")
+        ad_title = data.get("adTitle", "")
+        logger.info("   ↳ Origem: %s | App: %s | Anúncio: %s", entry_source, entry_app, ad_title)
 
     if not phone:
         raise HTTPException(status_code=400, detail="Payload sem telefone do remetente.")
@@ -119,7 +131,8 @@ def webhook(payload: dict[str, Any], background_tasks: BackgroundTasks) -> dict[
             flow_engine.handle_incoming_message,
             chat_id=session_id,
             phone=phone,
-            message_text=message_text
+            message_text=message_text,
+            ctwa_clid=ctwa_clid,
         )
     except Exception as exc:  # pragma: no cover - log de runtime
         logger.exception("Erro ao colocar webhoook processing task in background")

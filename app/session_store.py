@@ -22,13 +22,14 @@ class SessionStore:
                     """
                 )
                 cursor.execute("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS is_executing BOOLEAN DEFAULT FALSE")
+                cursor.execute("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS ctwa_clid VARCHAR DEFAULT NULL")
             connection.commit()
 
     def get_session(self, chat_id: str) -> dict[str, str] | None:
         with self._lock, self._connect() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT chat_id, flow_id, step_id, is_executing FROM sessions WHERE chat_id = %s",
+                    "SELECT chat_id, flow_id, step_id, is_executing, ctwa_clid FROM sessions WHERE chat_id = %s",
                     (chat_id,),
                 )
                 row = cursor.fetchone()
@@ -41,6 +42,7 @@ class SessionStore:
             "flow_id": row[1],
             "step_id": row[2],
             "is_executing": row[3],
+            "ctwa_clid": row[4],
         }
 
     def set_session(self, chat_id: str, flow_id: str, step_id: str, is_executing: bool = False) -> None:
@@ -64,6 +66,20 @@ class SessionStore:
         with self._lock, self._connect() as connection:
             with connection.cursor() as cursor:
                 cursor.execute("DELETE FROM sessions WHERE chat_id = %s", (chat_id,))
+            connection.commit()
+
+    def set_ctwa_clid(self, chat_id: str, ctwa_clid: str) -> None:
+        """Salva o ctwa_clid (Click to WhatsApp Client ID) na sessão.
+        Só sobrescreve se o valor atual for NULL (preserva o primeiro clique)."""
+        with self._lock, self._connect() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE sessions SET ctwa_clid = %s
+                    WHERE chat_id = %s AND (ctwa_clid IS NULL OR ctwa_clid = '')
+                    """,
+                    (ctwa_clid, chat_id),
+                )
             connection.commit()
 
     def _connect(self):
