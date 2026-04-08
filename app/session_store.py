@@ -21,13 +21,14 @@ class SessionStore:
                     )
                     """
                 )
+                cursor.execute("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS is_executing BOOLEAN DEFAULT FALSE")
             connection.commit()
 
     def get_session(self, chat_id: str) -> dict[str, str] | None:
         with self._lock, self._connect() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT chat_id, flow_id, step_id FROM sessions WHERE chat_id = %s",
+                    "SELECT chat_id, flow_id, step_id, is_executing FROM sessions WHERE chat_id = %s",
                     (chat_id,),
                 )
                 row = cursor.fetchone()
@@ -39,21 +40,23 @@ class SessionStore:
             "chat_id": row[0],
             "flow_id": row[1],
             "step_id": row[2],
+            "is_executing": row[3],
         }
 
-    def set_session(self, chat_id: str, flow_id: str, step_id: str) -> None:
+    def set_session(self, chat_id: str, flow_id: str, step_id: str, is_executing: bool = False) -> None:
         with self._lock, self._connect() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO sessions (chat_id, flow_id, step_id, updated_at)
-                    VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                    INSERT INTO sessions (chat_id, flow_id, step_id, is_executing, updated_at)
+                    VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
                     ON CONFLICT(chat_id) DO UPDATE SET
                         flow_id = EXCLUDED.flow_id,
                         step_id = EXCLUDED.step_id,
+                        is_executing = EXCLUDED.is_executing,
                         updated_at = CURRENT_TIMESTAMP
                     """,
-                    (chat_id, flow_id, step_id),
+                    (chat_id, flow_id, step_id, is_executing),
                 )
             connection.commit()
 

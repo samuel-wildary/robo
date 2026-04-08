@@ -55,6 +55,10 @@ class FlowEngine:
         existing_session = self.session_store.get_session(chat_id)
 
         if existing_session:
+            if existing_session.get("is_executing") is True:
+                logger.info("Bot está executando fluxo para %s. Ignorando mensagem concorrente.", chat_id)
+                return
+
             if existing_session.get("flow_id") == "__COMPLETED__":
                 logger.info("Sessao ja concluida para %s. Ignorando mensagem.", chat_id)
                 return
@@ -133,15 +137,17 @@ class FlowEngine:
             self.session_store.clear_session(chat_id)
             return
 
+        self.session_store.set_session(chat_id, flow["id"], step_id, is_executing=True)
+
         self._execute_actions(step.get("actions", []), chat_id)
 
         if step.get("end"):
             logger.info("Fluxo concluido para %s. Marcando estado como COMPLETED.", chat_id)
-            self.session_store.set_session(chat_id, "__COMPLETED__", "__COMPLETED__")
+            self.session_store.set_session(chat_id, "__COMPLETED__", "__COMPLETED__", is_executing=False)
             return
 
         next_waiting_step = step.get("next_step", step_id)
-        self.session_store.set_session(chat_id, flow["id"], next_waiting_step)
+        self.session_store.set_session(chat_id, flow["id"], next_waiting_step, is_executing=False)
 
     def _execute_actions(self, actions: list[dict[str, Any]], chat_id: str) -> None:
         to = extract_phone(getattr(self, '_current_phone', None) or chat_id)
