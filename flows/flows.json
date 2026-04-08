@@ -186,6 +186,14 @@
               "text": "Certinho 😉"
             },
             {
+              "type": "wait",
+              "seconds": 4
+            },
+            {
+              "type": "media",
+              "media_path": "ingredientes.jpg"
+            },
+            {
               "type": "presence",
               "presence": "composing"
             },
