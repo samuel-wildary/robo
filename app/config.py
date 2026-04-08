@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     whatsapp_instance_token: str = ""
     public_base_url: str = "http://localhost:8000"
     flow_file: Path = Path("flows/flows.json")
-    database_url: str = "postgres://postgres:85885885@31.97.252.6:1011/atendimento?sslmode=disable"
+    database_url: str = ""
     request_timeout_seconds: int = 30
 
     model_config = SettingsConfigDict(
