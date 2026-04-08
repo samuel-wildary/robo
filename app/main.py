@@ -20,7 +20,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 settings = get_settings()
-session_store = SessionStore(settings.database_path)
+session_store = SessionStore(settings.database_url)
 api_client = WhatsAppApiClient(
     base_url=settings.whatsapp_api_base_url,
     instance_token=settings.whatsapp_instance_token,
