@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     public_base_url: str = "http://localhost:8000"
     flow_file: Path = Path("flows/flows.json")
     database_url: str = ""
+    redis_url: str = "redis://default:85885885@31.97.252.6:1012"
     request_timeout_seconds: int = 30
 
     model_config = SettingsConfigDict(
