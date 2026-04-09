@@ -33,7 +33,10 @@
             },
             {
               "type": "media",
-              "media_path": ["boas_vindas_a.ogg", "boas_vindas_b.ogg"]
+              "media_path": [
+                "boas_vindas_a.ogg",
+                "boas_vindas_b.ogg"
+              ]
             },
             {
               "type": "presence",
@@ -57,19 +60,11 @@
             },
             {
               "type": "text",
-              "text": "Esses são os benefícios👇\n\n✔️ Elimina 7 a 15kg por mês\n✔️ Aumenta sua autoestima\n✔️ Reduz a ansiedade\n✔️ Abaixa o colesterol\n✔️ Aumenta Libido\n✔️ Elimina gordura no fígado\n✔️ Acelera o metabolismo\n✔️ Melhora seu bem estar\n✔️ Aumenta a imunidade\n✔️ inibe o apetite\n\n❤ 100% Seguro: Pode ser usado por qualquer pessoa, diabéticos e hipertensos. Por ser natural, só traz benefícios!\n\n🛒 Fácil de fazer: Ingredientes baratos que você acha em qualquer mercadinho"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "text",
-              "text": "Você quer eliminar quantos quilos ou perder barriga?"
+              "text": [
+                "Esses são alguns dos benefícios que muitas mulheres relatam ao incluir essa receita na rotina:\n\n✔️ Ajuda no processo de emagrecimento\n✔️ Contribui para diminuir o inchaço\n✔️ Ajuda a controlar melhor o apetite\n✔️ Pode aumentar a disposição no dia a dia\n✔️ Pode contribuir para mais leveza e bem-estar\n✔️ Ajuda você a se sentir melhor com o próprio corpo\n✔️ Pode auxiliar no metabolismo\n✔️ Pode trazer mais energia para a rotina\n\n❤ E o melhor: é uma receita simples, natural e fácil de preparar.\n\n🛒 Você encontra os ingredientes com facilidade e sem gastar muito.\n\nAgora me conta uma coisa para eu te ajudar melhor: seu foco é emagrecer, perder barriga ou diminuir o inchaço?",
+                "Olha só alguns dos benefícios dessa receita:\n\n✔️ Ajuda no emagrecimento\n✔️ Reduz o inchaço\n✔️ Ajuda no controle da fome\n✔️ Traz mais disposição\n✔️ Pode melhorar sua autoestima\n✔️ Ajuda a acelerar a rotina do metabolismo\n✔️ Pode contribuir para você se sentir mais leve no dia a dia\n\n❤ Por ser uma receita simples e natural, muita gente gosta justamente pela praticidade.\n\n🛒 Os ingredientes são baratos e fáceis de encontrar.\n\nMe fala aqui: você quer perder quantos quilos ou seu maior incômodo hoje é a barriga?",
+                "Deixa eu te mostrar por que tanta gente tem se interessado por essa receita:\n\n✔️ Ajuda a emagrecer\n✔️ Ajuda a reduzir o inchaço\n✔️ Pode dar mais disposição\n✔️ Ajuda a controlar melhor a vontade de comer\n✔️ Pode contribuir para mais bem-estar\n✔️ Ajuda você a se sentir mais leve e confiante\n\n❤ Além disso, é uma receita simples, natural e fácil de fazer.\n\n🛒 Os ingredientes cabem no bolso e você encontra com facilidade.\n\nAgora me conta: hoje você quer mais perder barriga, diminuir o inchaço ou eliminar alguns quilos?"
+              ]
             }
           ],
           "transitions": {

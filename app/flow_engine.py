@@ -172,7 +172,12 @@ class FlowEngine:
                 continue
 
             if action_type == "text":
-                self.client.send_text(to=to, text=action["text"])
+                import random
+                text_val = action.get("text", "")
+                if isinstance(text_val, list):
+                    text_val = random.choice(text_val)
+
+                self.client.send_text(to=to, text=text_val)
                 continue
 
             if action_type == "media":
