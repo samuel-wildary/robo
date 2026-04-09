@@ -176,12 +176,17 @@ class FlowEngine:
                 continue
 
             if action_type == "media":
-                media_url = self._resolve_media_url(action)
-                media_type = self._detect_media_type(action)
+                import random
+                action_to_resolve = action.copy()
+                if isinstance(action.get("media_path"), list):
+                    action_to_resolve["media_path"] = random.choice(action["media_path"])
+
+                media_url = self._resolve_media_url(action_to_resolve)
+                media_type = self._detect_media_type(action_to_resolve)
                 self.client.send_media(
                     to=to,
                     media_url=media_url,
-                    caption=action.get("caption"),
+                    caption=action_to_resolve.get("caption"),
                     media_type=media_type,
                 )
                 continue

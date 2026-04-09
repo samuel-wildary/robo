@@ -25,6 +25,18 @@
           "actions": [
             {
               "type": "presence",
+              "presence": "recording"
+            },
+            {
+              "type": "wait",
+              "seconds": 12
+            },
+            {
+              "type": "media",
+              "media_path": ["boas_vindas_a.ogg", "boas_vindas_b.ogg"]
+            },
+            {
+              "type": "presence",
               "presence": "composing"
             },
             {
