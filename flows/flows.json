@@ -95,7 +95,7 @@
             },
             {
               "type": "media",
-              "media_path": "audio1.ogg"
+              "media_path": ["audio1_a.ogg", "audio1_b.ogg", "audio1_c.ogg"]
             },
             {
               "type": "wait",
