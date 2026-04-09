@@ -75,103 +75,19 @@
           "actions": [
             {
               "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "text",
-              "text": "Isso é totalmente possível! E vai transformar a forma que você se vê no espelho."
-            },
-            {
-              "type": "presence",
               "presence": "recording"
             },
             {
               "type": "wait",
-              "seconds": 6
+              "seconds": 14
             },
             {
               "type": "media",
-              "media_path": ["audio1_a.ogg", "audio1_b.ogg", "audio1_c.ogg"]
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "media",
-              "media_path": "foto1.jpg"
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "media",
-              "media_path": "foto2.jpg"
-            },
-            {
-              "type": "presence",
-              "presence": "recording"
-            },
-            {
-              "type": "wait",
-              "seconds": 8
-            },
-            {
-              "type": "media",
-              "media_path": "audio2.ogg"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 8
-            },
-            {
-              "type": "text",
-              "text": "Se elas conseguiram, você também consegue! 🙏"
-            },
-            {
-              "type": "presence",
-              "presence": "recording"
-            },
-            {
-              "type": "wait",
-              "seconds": 8
-            },
-            {
-              "type": "media",
-              "media_path": "audio3.ogg"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "text",
-              "text": "Ouça e me responda pra eu ja te enviar a receita esse áudio é muito importante.👇"
-            },
-            {
-              "type": "presence",
-              "presence": "recording"
-            },
-            {
-              "type": "wait",
-              "seconds": 8
-            },
-            {
-              "type": "media",
-              "media_path": "audio4.ogg"
+              "media_path": [
+                "audio1_a.ogg",
+                "audio1_b.ogg",
+                "audio1_c.ogg"
+              ]
             }
           ],
           "transitions": {
