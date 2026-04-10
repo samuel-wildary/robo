@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     database_url: str = ""
     redis_url: str = "redis://default:85885885@31.97.252.6:1013"
     request_timeout_seconds: int = 30
+    openai_api_key: str = ""
+    admin_user: str = "admin"
+    admin_password: str = "admin123"
 
     model_config = SettingsConfigDict(
         env_file=".env",

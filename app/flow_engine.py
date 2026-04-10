@@ -25,6 +25,17 @@ def extract_phone(chat_id: str) -> str:
     digits = re.sub(r"\D", "", chat_id or "")
     return digits
 
+def load_assets_config() -> dict[str, Any]:
+    config_file = Path("app/data/assets_config.json")
+    if config_file.exists():
+        try:
+            with open(config_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error("Erro ao carregar assets_config.json: %s", e)
+    return {}
+
+
 
 class FlowEngine:
     def __init__(
@@ -33,11 +44,13 @@ class FlowEngine:
         session_store: SessionStore,
         client: WhatsAppApiClient,
         public_base_url: str,
+        agent=None,
     ) -> None:
         self.flow_file = Path(flow_file)
         self.session_store = session_store
         self.client = client
         self.public_base_url = public_base_url.rstrip("/")
+        self.agent = agent
         self.flow_definition: dict[str, Any] = {}
 
     def load(self) -> None:
@@ -69,12 +82,28 @@ class FlowEngine:
 
             flow = self._get_flow_by_id(existing_session["flow_id"])
             if flow:
-                current_step = self._get_step(flow, existing_session["step_id"])
+                current_step_id = existing_session["step_id"]
+                current_step = self._get_step(flow, current_step_id)
                 if current_step:
-                    next_step = self._resolve_transition(current_step, normalized_message)
-                    if next_step:
-                        self._execute_step(flow, next_step, chat_id, resolved_phone)
+                    if flow.get("agent_driven") and self.agent:
+                        reply_text, whatsapp_actions = self.agent.process_message(chat_id, message_text)
+                        
+                        if reply_text:
+                            import time
+                            delay = min(max(len(reply_text) * 0.03, 2), 6)
+                            time.sleep(0.5)
+                            self.client.send_presence(to=resolved_phone, presence="composing")
+                            time.sleep(delay)
+                            self.client.send_text(to=resolved_phone, text=reply_text)
+                        
+                        if whatsapp_actions:
+                            self._execute_actions(whatsapp_actions, chat_id, resolved_phone)
                         return
+                    else:
+                        next_step = self._resolve_transition(current_step, normalized_message)
+                        if next_step:
+                            self._execute_step(flow, next_step, chat_id, resolved_phone)
+                            return
 
                     fallback_actions = current_step.get("fallback_actions") or []
                     if fallback_actions:
@@ -83,11 +112,42 @@ class FlowEngine:
 
         flow = self._match_flow(normalized_message)
         if flow:
-            self._execute_step(flow, flow["entry_step"], chat_id, resolved_phone)
-            # Salva ctwa_clid após criar a sessão (caso seja a primeira mensagem)
-            if ctwa_clid:
-                self.session_store.set_ctwa_clid(chat_id, ctwa_clid)
-            return
+            if flow.get("agent_driven") and self.agent:
+                self.session_store.set_session(chat_id, flow["id"], "agent_loop", is_executing=True)
+                
+                # Aplica o initial delay global na primeira interacao
+                assets_config = load_assets_config()
+                initial_delay = assets_config.get("global_initial_delay", 0)
+                if initial_delay > 0:
+                    time.sleep(1) # respiro do webhook
+                    self.client.send_presence(to=resolved_phone, presence="composing")
+                    logger.info("Aplicando initial_delay_global de %s segs para o chat_id %s", initial_delay, chat_id)
+                    time.sleep(initial_delay)
+                
+                reply_text, whatsapp_actions = self.agent.process_message(chat_id, message_text)
+                
+                # Se for conversa normal de IA por texto longo, simula que está digitando
+                if reply_text:
+                    import time
+                    # Um pequeno delay proporcional ao tamanho do texto (max 6s)
+                    delay = min(max(len(reply_text) * 0.03, 2), 6)
+                    time.sleep(0.5)
+                    self.client.send_presence(to=resolved_phone, presence="composing")
+                    time.sleep(delay)
+                    self.client.send_text(to=resolved_phone, text=reply_text)
+                    
+                if whatsapp_actions:
+                    self._execute_actions(whatsapp_actions, chat_id, resolved_phone)
+                
+                self.session_store.set_session(chat_id, flow["id"], "agent_loop", is_executing=False)
+                if ctwa_clid:
+                    self.session_store.set_ctwa_clid(chat_id, ctwa_clid)
+                return
+            else:
+                self._execute_step(flow, flow.get("entry_step"), chat_id, resolved_phone)
+                if ctwa_clid:
+                    self.session_store.set_ctwa_clid(chat_id, ctwa_clid)
+                return
 
         default_actions = self.flow_definition.get("default_actions") or []
         if default_actions:
@@ -183,8 +243,26 @@ class FlowEngine:
             if action_type == "media":
                 import random
                 action_to_resolve = action.copy()
-                if isinstance(action.get("media_path"), list):
-                    action_to_resolve["media_path"] = random.choice(action["media_path"])
+                media_path_raw = action.get("media_path", "")
+                
+                if isinstance(media_path_raw, list):
+                    media_path_val = random.choice(media_path_raw)
+                    action_to_resolve["media_path"] = media_path_val
+                else:
+                    media_path_val = media_path_raw
+
+                # Injeta delays visuais baseados na UI (Asset Configs)
+                assets_config = load_assets_config()
+                if media_path_val:
+                    file_meta = assets_config.get("files", {}).get(media_path_val, {})
+                    p_type = file_meta.get("presence")
+                    d_secs = file_meta.get("delay_seconds", 0)
+                    
+                    if p_type:
+                        self.client.send_presence(to=to, presence=p_type)
+                    if d_secs > 0:
+                        logger.info("Aplicando delay de %ss e presence %s para %s baseado na UI", d_secs, p_type, media_path_val)
+                        time.sleep(d_secs)
 
                 media_url = self._resolve_media_url(action_to_resolve)
                 media_type = self._detect_media_type(action_to_resolve)

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle do Bot 🤖</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #0f172a;
+            --surface: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #818cf8, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            height: 60vh;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-family: monospace;
+            font-size: 0.9rem;
+            padding: 1rem;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); }
+        .btn-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.4); }
+
+        /* Uploader Area */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+            background: rgba(0,0,0,0.2);
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+        }
+
+        .file-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: background 0.2s;
+        }
+        
+        .file-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-controls {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(0,0,0,0.2);
+            padding: 0.5rem;
+            border-radius: 6px;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .file-controls select, .file-controls input {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 0.3rem;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .global-settings {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .file-name { font-weight: 600; font-size: 0.95rem; }
+        .file-size { font-size: 0.8rem; color: var(--text-muted); }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .template-item {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .template-item:hover {
+            border-color: var(--primary);
+            background: rgba(99,102,241,0.1);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            background: var(--success);
+            color: white;
+            font-weight: 600;
+            transform: translateY(150%);
+            transition: transform 0.3s;
+            z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); }
+        .toast.error { background: var(--danger); }
+        
+        input[type="file"] { display: none; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🧠 Neuromatrix Admin</h1>
+    <div>
+        <span style="color: var(--text-muted); margin-right: 1rem; font-size: 0.9rem;">🟢 Sistema Online</span>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Esquerda: Editor do Prompt -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Mente da Inteligência Artificial (Prompt)</h2>
+            <div>
+                <button class="btn btn-outline" onclick="openTemplatesModal()">Modelos Prontos</button>
+                <button class="btn" onclick="savePrompt()" id="saveBtn">Salvar Alterações</button>
+            </div>
+        </div>
+
+        <!-- Global Settings -->
+        <div class="global-settings">
+            <div>
+                <strong style="display:block; margin-bottom:0.2rem;">⏱️ Atraso Especial na 1ª Mensagem</strong>
+                <span style="font-size:0.8rem; color:var(--text-muted)">Tempo que o robô leva para responder o primeiro "Oi" do cliente:</span>
+            </div>
+            <div>
+                <input type="number" id="globalInitialDelay" style="width: 60px; padding:0.4rem; background:rgba(0,0,0,0.3); border:1px solid var(--border); color:white; border-radius:4px;" value="0" min="0"> segs
+            </div>
+        </div>
+
+        <textarea id="promptEditor" placeholder="Carregando prompt..."></textarea>
+    </div>
+
+    <!-- Direita: Gestão de Mídias -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Diretório de Assets Físicos</h2>
+        </div>
+        
+        <label class="upload-zone" id="dropZone">
+            <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)">
+            <p style="margin:0">📂 Arraste áudios, imagens etc aqui</p>
+        </label>
+
+        <ul class="file-list" id="fileList">
+            <div style="text-align:center; padding:2rem; color:var(--text-muted)">Carregando arquivos...</div>
+        </ul>
+    </div>
+</div>
+
+<!-- Modal Templates -->
+<div class="modal-overlay" id="templatesModal" onclick="closeTemplatesModal(event)">
+    <div class="modal">
+        <h2 style="margin-top:0">Modelos de Estratégia</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem">Substitua o comportamento atual do sistema clicando em um modelo pré-montado.</p>
+        
+        <div class="template-item" onclick="applyTemplate('contra_entrega')">
+            <h3 style="margin:0 0 0.5rem 0">💊 Template: Contra-Entrega (Padrão)</h3>
+            <p style="margin:0; font-size:0.85rem; color:var(--text-muted)">Funil de relacionamento, envio prévio gratuito e PIX reverso. Ouve audios 1, 2, 3.</p>
+        </div>
+        
+        <div class="template-item" onclick="applyTemplate('venda_direta')">
+            <h3 style="margin:0 0 0.5rem 0">🛒 Template: Venda Direta com Objeção</h3>
+            <p style="margin:0; font-size:0.85rem; color:var(--text-muted)">Apresenta a oferta direto com áudio, tira a dúvida e manda o Checkout Checkout.</p>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">Salvo com sucesso!</div>
+
+<script>
+    // TOAST
+    function showToast(msg, isError=false) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.className = 'toast show ' + (isError ? 'error' : '');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // PROMPT MANAGEMENT
+    async function loadPrompt() {
+        try {
+            const res = await fetch('/api/prompt');
+            const data = await res.json();
+            document.getElementById('promptEditor').value = data.prompt;
+        } catch (e) {
+            showToast('Erro ao carregar o prompt', true);
+        }
+    }
+
+    async function savePrompt() {
+        const btn = document.getElementById('saveBtn');
+        btn.textContent = 'Salvando...';
+        btn.disabled = true;
+        try {
+            // Salva Prompt
+            const content = document.getElementById('promptEditor').value;
+            const res = await fetch('/api/prompt', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({prompt: content})
+            });
+
+            // Coleta config de assets
+            const config = {
+                global_initial_delay: parseInt(document.getElementById('globalInitialDelay').value) || 0,
+                files: {}
+            };
+            
+            document.querySelectorAll('.file-item').forEach(item => {
+                const fname = item.getAttribute('data-name');
+                const delay = parseInt(item.querySelector('.delay-input').value) || 0;
+                const presence = item.querySelector('.presence-select').value;
+                if(fname) {
+                    config.files[fname] = { delay_seconds: delay, presence: presence };
+                }
+            });
+
+            await fetch('/api/asset-config', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({config: config})
+            });
+
+            showToast('Alterações salvas com sucesso! 🧠');
+        } catch (e) {
+            showToast('Erro de Conexão', true);
+        }
+        btn.textContent = 'Salvar Alterações';
+        btn.disabled = false;
+    }
+
+    // ASSETS MANAGEMENT
+    async function loadAssets() {
+        try {
+            const res = await fetch('/api/assets');
+            const data = await res.json();
+            
+            document.getElementById('globalInitialDelay').value = data.global_initial_delay || 0;
+
+            const list = document.getElementById('fileList');
+            list.innerHTML = '';
+            
+            if(data.files.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:1rem; color:var(--text-muted)">Pasta vazia.</div>';
+                return;
+            }
+
+            data.files.forEach(f => {
+                const sizeK = (f.size / 1024).toFixed(1);
+                list.innerHTML += `
+                    <li class="file-item" data-name="${f.name}">
+                        <div class="file-item-header">
+                            <div class="file-info">
+                                <span class="file-name">📄 ${f.name}</span>
+                                <span class="file-size">${sizeK} KB</span>
+                            </div>
+                            <button class="btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.75rem" onclick="deleteAsset('${f.name}')">🗑 Apagar</button>
+                        </div>
+                        <div class="file-controls">
+                            <span>🎭 Simular antes de enviar:</span>
+                            <select class="presence-select">
+                                <option value="" ${f.presence==''?'selected':''}>Nada</option>
+                                <option value="composing" ${f.presence=='composing'?'selected':''}>Digitando...</option>
+                                <option value="recording" ${f.presence=='recording'?'selected':''}>Gravando Áudio...</option>
+                            </select>
+                            <span>por</span>
+                            <input type="number" class="delay-input" style="width:50px" title="Segundos de Delay" value="${f.delay_seconds}" min="0"> 
+                            <span>segs.</span>
+                        </div>
+                    </li>
+                `;
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function deleteAsset(name) {
+        if(!confirm('Tem certeza que deseja apagar ' + name + '? O bot falhará se tentar usar esse arquivo.')) return;
+        
+        try {
+            const res = await fetch('/api/assets/' + encodeURIComponent(name), { method: 'DELETE' });
+            if(res.ok) {
+                showToast('Arquivo deletado!');
+                loadAssets();
+            }
+        } catch (e) {
+            showToast('Erro ao apagar', true);
+        }
+    }
+
+    async function handleFiles(files) {
+        if (!files.length) return;
+        
+        for (let file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                showToast('Enviando ' + file.name + '...');
+                const res = await fetch('/api/assets/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                if(res.ok) {
+                    showToast(file.name + ' enviado!');
+                } else {
+                    const data = await res.json();
+                    showToast('Erro: ' + data.detail, true);
+                }
+            } catch (e) {
+                showToast('Erro de Conexão', true);
+            }
+        }
+        loadAssets();
+    }
+
+    // Drag and Drop
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    // TEMPLATES
+    function openTemplatesModal() { document.getElementById('templatesModal').style.display = 'flex'; }
+    function closeTemplatesModal(e) { if(e.target.id === 'templatesModal') e.target.style.display = 'none'; }
+    
+    function applyTemplate(type) {
+        let text = "";
+        if(type === 'venda_direta') {
+            text = `Você é um Vendedor Premium via WhatsApp.
+Seja direto, persuasivo e amigável.
+O cliente acabou de entrar pelo Anúncio.
+
+AÇÕES DISPONÍVEIS:
+Sempre use a tool 'execute_whatsapp_actions' para enviar mídias.
+
+MÁQUINA DE ESTADO:
+1. Saudação: Se ele der Oi, envie "presence: composing", "wait: 2s", text: "Olá! Que bom te ver aqui. O treinamento VIP está disponível com vagas abertas!".
+2. Oferta: Logo em seguida na ferramenta, mande "presence: recording", "wait: 25s", media: "audio_oferta.ogg". Em seguida envie media: "thumb_curso.jpg".
+3. Fechamento: Quando ele perguntar o preço ou "quero comprar", passe o Link do Checkout PIX/Cartão.
+`;
+        } else {
+            text = document.getElementById('promptEditor').value; // fallbsck to keep current or reload from API
+        }
+        
+        if (text) {
+            document.getElementById('promptEditor').value = text;
+            showToast('Template injetado! Não esqueça de Salvar.');
+        }
+        document.getElementById('templatesModal').style.display = 'none';
+    }
+
+    // INIT
+    window.onload = () => {
+        loadPrompt();
+        loadAssets();
+    };
+</script>
+</body>
+</html>

@@ -46,3 +46,19 @@ class SessionStore:
             existing["chat_id"] = chat_id
             existing["ctwa_clid"] = ctwa_clid
             self.redis.setex(key, 86400, json.dumps(existing))
+
+    def get_history(self, chat_id: str) -> list[dict[str, str]]:
+        key = f"history:{chat_id}"
+        data = self.redis.get(key)
+        if data:
+            return json.loads(data)
+        return []
+
+    def add_message_to_history(self, chat_id: str, role: str, content: str) -> None:
+        key = f"history:{chat_id}"
+        history = self.get_history(chat_id)
+        history.append({"role": role, "content": content})
+        # Keep only the last 20 messages for context
+        if len(history) > 20:
+            history = history[-20:]
+        self.redis.setex(key, 86400, json.dumps(history))

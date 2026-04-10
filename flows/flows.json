@@ -90,169 +90,27 @@
               ]
             }
           ],
-          "transitions": {
-            "*": "entrega_receita"
-          }
-        },
-        "entrega_receita": {
-          "actions": [
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 4
-            },
-            {
-              "type": "text",
-              "text": "Certinho 😉"
-            },
-            {
-              "type": "wait",
-              "seconds": 4
-            },
-            {
-              "type": "media",
-              "media_path": "ingredientes.jpg"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "text",
-              "text": "Aqui a Receita, Siga o modo de uso certinho. \nOs ingredientes você encontra em  lojas de Produtos Naturais 👇👇"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 8
-            },
-            {
-              "type": "media",
-              "media_path": "receita.jpg",
-              "caption": "🍮✨ GELATINA BARIÁTRICA \n\n🧾 Ingredientes\n\n💧 250 ml de água quente\n💧 250 ml de água gelada\n🍮 1 envelope de gelatina sem sabor (12g)\n\n🟡 1 colher de sopa cheia de linhaça dourada (bem triturada)\n\n🟤 1 colher de chá rasa de psyllium\n\n⚪ 1 colher de chá de adoçante culinário zero\n➡️ eritritol, stevia ou xilitol\n\n🍋 Suco de 1 limão (opcional — dá sabor e melhora o gosto)\n\n🍎 1 colher de chá de vinagre de maçã\n\nModo de preparo \n\n (Passo a passo)\n\n1️⃣ Ferva 250 ml de água 🔥\n \n2️⃣ Em uma tigela, coloque:\n\n🍮 1 envelope de gelatina sem sabor\n\n3️⃣ Adicione a água quente e mexa bem 🥄✨\n\n➡️ até dissolver totalmente\n\n4️⃣ Espere ficar morno e adicione:\n\n🟡 1 colher de sopa de linhaça dourada triturada\nMisture bem \n\n5️⃣ Acrescente:\n💧 250 ml de água gelada ❄️\n \n6️⃣ Agora adicione:\n\n🟤 1 colher de chá rasa de psyllium\n\n⚠️ Misture rápido, porque ele engrossa na hora!\n\n7️⃣ Finalize com:\n\n⚪ 1 colher de chá de adoçante zero\n\n🍎 1 colher de chá de vinagre de maçã\n \n8️⃣ Coloque em potinhos 🫙✨\n \n9️⃣ Leve à geladeira por 4 horas ❄️⏳\n\n🔟 Pronto!\n\n* ✅ Modo de uso* \n \n Comer 1 porção pequena (100–150 ml) por dia\n\n⏰ Melhor horário:\n\n✔ 15 a 30 minutos antes do seu café da manhã.\n\n💦 Beba pelo menos 2 litros de água por dia\n\n📌 Tempo de uso\n\n✅ Use por 2 a 4 semanas seguidas"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "text",
-              "text": "A Receita tá acima 👆👆👆"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "text",
-              "text": "Peço que siga por 4 a 6 semanas direitinho e beba pelo menos 2 litros de água por dia."
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 8
-            },
-            {
-              "type": "text",
-              "text": "E o pix da taxa é esse \n\nChave pix Celular 👇"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 4
-            },
-            {
-              "type": "text",
-              "text": "85 987520060"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "text",
-              "text": "Tá no nome do meu esposo \n\nSamuel Wildary"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "text",
-              "text": "R$ 25 💛\nR$ 30 🧡\nR$ 35 ❤️\n\nEscolha o valor que fizer sentido pra você e contribua com o que sentir no coração para apoiar esse projeto 💖"
-            },
-            {
-              "type": "presence",
-              "presence": "composing"
-            },
-            {
-              "type": "wait",
-              "seconds": 6
-            },
-            {
-              "type": "text",
-              "text": "Só não esquece de tirar uma foto pra você mesma , antes de começar a tomar, tá bom?\n\nPra gente ir acompanhando os resultados."
-            },
-            {
-              "type": "presence",
-              "presence": "recording"
-            },
-            {
-              "type": "wait",
-              "seconds": 8
-            },
-            {
-              "type": "media",
-              "media_path": "audio5.ogg"
-            },
-            {
-              "type": "presence",
-              "presence": "recording"
-            },
-            {
-              "type": "wait",
-              "seconds": 8
-            },
-            {
-              "type": "media",
-              "media_path": "audio6.ogg"
-            }
-          ],
           "end": true
         }
       }
+    },
+    {
+      "id": "funil_contra_entrega",
+      "agent_driven": true,
+      "triggers": [
+        "contra entrega",
+        "contra-entrega",
+        "quero o material",
+        "material",
+        "eu quero",
+        "quero testar",
+        "me manda",
+        "mandar",
+        "receita",
+        "interesse",
+        "info",
+        "informações"
+      ]
     }
   ]
 }
