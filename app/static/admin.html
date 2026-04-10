@@ -1,533 +1,357 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Controle do Bot 🤖</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        
-        :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg-color: #0f172a;
-            --surface: rgba(30, 41, 59, 0.7);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --success: #10b981;
-            --danger: #ef4444;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 40%);
-            background-attachment: fixed;
-            color: var(--text-main);
-            min-height: 100vh;
-        }
-
-        header {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            background: linear-gradient(to right, #818cf8, #34d399);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 2rem;
-        }
-
-        @media (max-width: 1024px) {
-            .container { grid-template-columns: 1fr; }
-        }
-
-        .card {
-            background: var(--surface);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .card-title {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        textarea {
-            width: 100%;
-            height: 60vh;
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-main);
-            font-family: monospace;
-            font-size: 0.9rem;
-            padding: 1rem;
-            resize: none;
-            outline: none;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
-        }
-
-        textarea:focus {
-            border-color: var(--primary);
-        }
-
-        .btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
-        .btn-outline { background: transparent; border: 1px solid var(--border); }
-        .btn-outline:hover { background: rgba(255,255,255,0.05); }
-        .btn-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
-        .btn-danger:hover { background: rgba(239, 68, 68, 0.4); }
-
-        /* Uploader Area */
-        .upload-zone {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.3s;
-            background: rgba(0,0,0,0.2);
-            margin-bottom: 1.5rem;
-            cursor: pointer;
-        }
-
-        .file-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 50vh;
-            overflow-y: auto;
-        }
-
-        .file-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-            padding: 1rem;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            transition: background 0.2s;
-        }
-        
-        .file-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .file-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-controls {
-            display: flex;
-            gap: 0.5rem;
-            background: rgba(0,0,0,0.2);
-            padding: 0.5rem;
-            border-radius: 6px;
-            align-items: center;
-            font-size: 0.85rem;
-        }
-
-        .file-controls select, .file-controls input {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 0.3rem;
-            border-radius: 4px;
-            outline: none;
-        }
-
-        .global-settings {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .file-name { font-weight: 600; font-size: 0.95rem; }
-        .file-size { font-size: 0.8rem; color: var(--text-muted); }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(4px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal {
-            background: var(--surface);
-            padding: 2rem;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .template-item {
-            padding: 1rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .template-item:hover {
-            border-color: var(--primary);
-            background: rgba(99,102,241,0.1);
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            background: var(--success);
-            color: white;
-            font-weight: 600;
-            transform: translateY(150%);
-            transition: transform 0.3s;
-            z-index: 9999;
-        }
-        .toast.show { transform: translateY(0); }
-        .toast.error { background: var(--danger); }
-        
-        input[type="file"] { display: none; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Agente</title>
+  <style>
+    body{margin:0;font-family:Inter,Arial,sans-serif;background:#08111f;color:#eef4ff}
+    .app{padding:20px;display:flex;flex-direction:column;gap:16px}
+    .topbar,.panel{background:#0f1b30;border:1px solid rgba(255,255,255,.08);border-radius:18px}
+    .topbar{padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+    .topbar h1{margin:0 0 6px;font-size:28px}
+    .muted{color:#9eb0cb;font-size:13px;line-height:1.45}
+    .save{border:0;background:#38bdf8;color:#07111d;font-weight:700;padding:12px 18px;border-radius:12px;cursor:pointer}
+    .save:disabled{opacity:.6;cursor:wait}
+    .layout{display:grid;grid-template-columns:300px 1fr 340px;gap:16px;align-items:start}
+    .panel h2{margin:0;font-size:18px}
+    .head{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .body{padding:16px 18px}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+    .tabs button,.btn,.danger{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#eef4ff;border-radius:12px;padding:10px 12px;cursor:pointer}
+    .tabs .active{background:rgba(56,189,248,.18);border-color:rgba(56,189,248,.25)}
+    .danger{background:rgba(251,113,133,.12);border-color:rgba(251,113,133,.2);color:#ffd7de}
+    .stack{display:flex;flex-direction:column;gap:12px}
+    .item,.card,.tool{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}
+    .item strong,.card strong,.tool strong{display:block;margin-bottom:6px}
+    textarea,input,select{width:100%;background:#08111f;border:1px solid rgba(255,255,255,.1);border-radius:12px;color:#eef4ff;padding:10px 12px;font:inherit}
+    textarea{min-height:90px;resize:vertical}
+    label{display:block;margin-bottom:6px;color:#9eb0cb;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+    .field{margin-bottom:12px}
+    .canvas{display:flex;flex-direction:column;gap:12px;padding-left:18px;position:relative}
+    .canvas:before{content:'';position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:rgba(56,189,248,.25)}
+    .card{position:relative}
+    .card:before{content:'';position:absolute;left:-18px;top:22px;width:10px;height:10px;border-radius:999px;background:#38bdf8}
+    .selected{border-color:rgba(56,189,248,.45);background:rgba(56,189,248,.1)}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+    .drop{border:1px dashed rgba(255,255,255,.18);border-radius:14px;padding:16px;text-align:center;cursor:pointer;background:rgba(255,255,255,.02)}
+    .empty{border:1px dashed rgba(255,255,255,.12);border-radius:14px;padding:18px;text-align:center}
+    .hint{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.18);border-radius:14px;padding:12px;margin-bottom:12px}
+    .toast{position:fixed;right:20px;bottom:20px;background:#0f1b30;border:1px solid rgba(255,255,255,.08);padding:12px 14px;border-radius:12px;transform:translateY(150%);transition:transform .2s}
+    .toast.show{transform:translateY(0)}
+    .toast.error{border-color:rgba(251,113,133,.2);color:#ffd7de}
+    input[type=file]{display:none}
+    @media (max-width:1100px){.layout{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
-
-<header>
-    <h1>🧠 Neuromatrix Admin</h1>
-    <div>
-        <span style="color: var(--text-muted); margin-right: 1rem; font-size: 0.9rem;">🟢 Sistema Online</span>
-    </div>
-</header>
-
-<div class="container">
-    <!-- Esquerda: Editor do Prompt -->
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Mente da Inteligência Artificial (Prompt)</h2>
-            <div>
-                <button class="btn btn-outline" onclick="openTemplatesModal()">Modelos Prontos</button>
-                <button class="btn" onclick="savePrompt()" id="saveBtn">Salvar Alterações</button>
-            </div>
-        </div>
-
-        <!-- Global Settings -->
-        <div class="global-settings">
-            <div>
-                <strong style="display:block; margin-bottom:0.2rem;">⏱️ Atraso Especial na 1ª Mensagem</strong>
-                <span style="font-size:0.8rem; color:var(--text-muted)">Tempo que o robô leva para responder o primeiro "Oi" do cliente:</span>
-            </div>
-            <div>
-                <input type="number" id="globalInitialDelay" style="width: 60px; padding:0.4rem; background:rgba(0,0,0,0.3); border:1px solid var(--border); color:white; border-radius:4px;" value="0" min="0"> segs
-            </div>
-        </div>
-
-        <textarea id="promptEditor" placeholder="Carregando prompt..."></textarea>
+  <div class="app">
+    <div class="topbar">
+      <div>
+        <h1>Construtor Visual do Agente</h1>
+        <div class="muted">Cards no centro, ferramentas na lateral e edicao do card na direita.</div>
+      </div>
+      <button class="save" id="saveButton" onclick="saveAll()">Salvar painel</button>
     </div>
 
-    <!-- Direita: Gestão de Mídias -->
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Diretório de Assets Físicos</h2>
+    <div class="layout">
+      <aside class="panel">
+        <div class="head">
+          <div>
+            <h2>Laterais</h2>
+            <div class="muted">Conecte ferramentas ao card.</div>
+          </div>
+          <button class="btn" onclick="addCard()">Novo card</button>
         </div>
-        
-        <label class="upload-zone" id="dropZone">
-            <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)">
-            <p style="margin:0">📂 Arraste áudios, imagens etc aqui</p>
-        </label>
+        <div class="body">
+          <div class="tabs">
+            <button id="tabTools" class="active" onclick="setTab('tools')">Ferramentas</button>
+            <button id="tabFiles" onclick="setTab('files')">Arquivos</button>
+          </div>
+          <div id="sidebar"></div>
+        </div>
+      </aside>
 
-        <ul class="file-list" id="fileList">
-            <div style="text-align:center; padding:2rem; color:var(--text-muted)">Carregando arquivos...</div>
-        </ul>
+      <section class="panel">
+        <div class="head">
+          <div>
+            <h2>Canvas</h2>
+            <div class="muted">Cada card representa um pedaco do prompt ou da conversa.</div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="field">
+            <label>Diretriz mestre do agente</label>
+            <textarea id="systemDirective" oninput="state.config.system_directive=this.value"></textarea>
+          </div>
+          <div id="canvas"></div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="head">
+          <div>
+            <h2>Inspector</h2>
+            <div class="muted">Edite o card selecionado.</div>
+          </div>
+        </div>
+        <div class="body" id="inspector"></div>
+      </aside>
     </div>
-</div>
+  </div>
 
-<!-- Modal Templates -->
-<div class="modal-overlay" id="templatesModal" onclick="closeTemplatesModal(event)">
-    <div class="modal">
-        <h2 style="margin-top:0">Modelos de Estratégia</h2>
-        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem">Substitua o comportamento atual do sistema clicando em um modelo pré-montado.</p>
-        
-        <div class="template-item" onclick="applyTemplate('contra_entrega')">
-            <h3 style="margin:0 0 0.5rem 0">💊 Template: Contra-Entrega (Padrão)</h3>
-            <p style="margin:0; font-size:0.85rem; color:var(--text-muted)">Funil de relacionamento, envio prévio gratuito e PIX reverso. Ouve audios 1, 2, 3.</p>
-        </div>
-        
-        <div class="template-item" onclick="applyTemplate('venda_direta')">
-            <h3 style="margin:0 0 0.5rem 0">🛒 Template: Venda Direta com Objeção</h3>
-            <p style="margin:0; font-size:0.85rem; color:var(--text-muted)">Apresenta a oferta direto com áudio, tira a dúvida e manda o Checkout Checkout.</p>
-        </div>
-    </div>
-</div>
+  <div id="toast" class="toast"></div>
 
-<div class="toast" id="toast">Salvo com sucesso!</div>
+  <script>
+    const state={config:{system_directive:'',cards:[]},assets:[],assetConfig:{global_initial_delay:0,files:{}},selectedCardId:null,tab:'tools'};
 
-<script>
-    // TOAST
-    function showToast(msg, isError=false) {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg;
-        toast.className = 'toast show ' + (isError ? 'error' : '');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+    const uid=(prefix)=>prefix+'_'+Math.random().toString(36).slice(2,8);
+    const esc=(v)=>String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    const jsq=(v)=>JSON.stringify(String(v||''));
+    const toast=(msg,error=false)=>{const el=document.getElementById('toast');el.textContent=msg;el.className='toast show'+(error?' error':'');setTimeout(()=>el.className='toast',2500);};
+
+    function normalizeTool(tool){
+      if(!tool||typeof tool!=='object') return null;
+      const kind=String(tool.kind||tool.type||'').toLowerCase();
+      if(!['text','media'].includes(kind)) return null;
+      if(kind==='text') return {id:String(tool.id||uid('tool')),kind:'text',label:String(tool.label||'Texto via tool'),content:String(tool.content||tool.text||'')};
+      return {id:String(tool.id||uid('tool')),kind:'media',label:String(tool.label||tool.asset||tool.media_path||'Arquivo'),asset:String(tool.asset||tool.media_path||'')};
     }
 
-    // PROMPT MANAGEMENT
-    async function loadPrompt() {
-        try {
-            const res = await fetch('/api/prompt');
-            const data = await res.json();
-            document.getElementById('promptEditor').value = data.prompt;
-        } catch (e) {
-            showToast('Erro ao carregar o prompt', true);
-        }
+    function normalizeCard(card){
+      const tools=(Array.isArray(card?.tools)?card.tools:Array.isArray(card?.actions)?card.actions:[]).map(normalizeTool).filter(Boolean);
+      return {id:String(card?.id||uid('card')),title:String(card?.title||card?.name||'Novo card'),trigger:String(card?.trigger||''),instruction:String(card?.instruction||''),output_guidance:String(card?.output_guidance||card?.post_text||''),tools};
     }
 
-    async function savePrompt() {
-        const btn = document.getElementById('saveBtn');
-        btn.textContent = 'Salvando...';
-        btn.disabled = true;
-        try {
-            // Salva Prompt
-            const content = document.getElementById('promptEditor').value;
-            const res = await fetch('/api/prompt', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({prompt: content})
-            });
-
-            // Coleta config de assets
-            const config = {
-                global_initial_delay: parseInt(document.getElementById('globalInitialDelay').value) || 0,
-                files: {}
-            };
-            
-            document.querySelectorAll('.file-item').forEach(item => {
-                const fname = item.getAttribute('data-name');
-                const delay = parseInt(item.querySelector('.delay-input').value) || 0;
-                const presence = item.querySelector('.presence-select').value;
-                if(fname) {
-                    config.files[fname] = { delay_seconds: delay, presence: presence };
-                }
-            });
-
-            await fetch('/api/asset-config', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({config: config})
-            });
-
-            showToast('Alterações salvas com sucesso! 🧠');
-        } catch (e) {
-            showToast('Erro de Conexão', true);
-        }
-        btn.textContent = 'Salvar Alterações';
-        btn.disabled = false;
+    function normalizeConfig(config){
+      const rawCards=Array.isArray(config?.cards)?config.cards:Array.isArray(config?.phases)?config.phases:[];
+      return {system_directive:String(config?.system_directive||''),cards:rawCards.map(normalizeCard)};
     }
 
-    // ASSETS MANAGEMENT
-    async function loadAssets() {
-        try {
-            const res = await fetch('/api/assets');
-            const data = await res.json();
-            
-            document.getElementById('globalInitialDelay').value = data.global_initial_delay || 0;
+    function selectedCard(){return state.config.cards.find(card=>card.id===state.selectedCardId)||null;}
+    function setTab(tab){state.tab=tab;renderSidebar();}
 
-            const list = document.getElementById('fileList');
-            list.innerHTML = '';
-            
-            if(data.files.length === 0) {
-                list.innerHTML = '<div style="text-align:center; padding:1rem; color:var(--text-muted)">Pasta vazia.</div>';
-                return;
-            }
-
-            data.files.forEach(f => {
-                const sizeK = (f.size / 1024).toFixed(1);
-                list.innerHTML += `
-                    <li class="file-item" data-name="${f.name}">
-                        <div class="file-item-header">
-                            <div class="file-info">
-                                <span class="file-name">📄 ${f.name}</span>
-                                <span class="file-size">${sizeK} KB</span>
-                            </div>
-                            <button class="btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.75rem" onclick="deleteAsset('${f.name}')">🗑 Apagar</button>
-                        </div>
-                        <div class="file-controls">
-                            <span>🎭 Simular antes de enviar:</span>
-                            <select class="presence-select">
-                                <option value="" ${f.presence==''?'selected':''}>Nada</option>
-                                <option value="composing" ${f.presence=='composing'?'selected':''}>Digitando...</option>
-                                <option value="recording" ${f.presence=='recording'?'selected':''}>Gravando Áudio...</option>
-                            </select>
-                            <span>por</span>
-                            <input type="number" class="delay-input" style="width:50px" title="Segundos de Delay" value="${f.delay_seconds}" min="0"> 
-                            <span>segs.</span>
-                        </div>
-                    </li>
-                `;
-            });
-        } catch (e) {
-            console.error(e);
-        }
+    function addCard(){
+      const card={id:uid('card'),title:'Novo card',trigger:'',instruction:'',output_guidance:'',tools:[]};
+      state.config.cards.push(card);
+      state.selectedCardId=card.id;
+      renderAll();
     }
 
-    async function deleteAsset(name) {
-        if(!confirm('Tem certeza que deseja apagar ' + name + '? O bot falhará se tentar usar esse arquivo.')) return;
-        
-        try {
-            const res = await fetch('/api/assets/' + encodeURIComponent(name), { method: 'DELETE' });
-            if(res.ok) {
-                showToast('Arquivo deletado!');
-                loadAssets();
-            }
-        } catch (e) {
-            showToast('Erro ao apagar', true);
-        }
+    function selectCard(cardId){state.selectedCardId=cardId;renderCanvas();renderInspector();renderSidebar();}
+    function removeCard(cardId){
+      if(!confirm('Apagar este card?')) return;
+      state.config.cards=state.config.cards.filter(card=>card.id!==cardId);
+      if(state.selectedCardId===cardId) state.selectedCardId=state.config.cards[0]?.id||null;
+      renderAll();
     }
 
-    async function handleFiles(files) {
-        if (!files.length) return;
-        
-        for (let file of files) {
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            try {
-                showToast('Enviando ' + file.name + '...');
-                const res = await fetch('/api/assets/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                if(res.ok) {
-                    showToast(file.name + ' enviado!');
-                } else {
-                    const data = await res.json();
-                    showToast('Erro: ' + data.detail, true);
-                }
-            } catch (e) {
-                showToast('Erro de Conexão', true);
-            }
-        }
-        loadAssets();
+    function moveCard(cardId,direction){
+      const index=state.config.cards.findIndex(card=>card.id===cardId);
+      const next=direction==='up'?index-1:index+1;
+      if(index<0||next<0||next>=state.config.cards.length) return;
+      const [card]=state.config.cards.splice(index,1);
+      state.config.cards.splice(next,0,card);
+      renderCanvas();
     }
 
-    // Drag and Drop
-    const dropZone = document.getElementById('dropZone');
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        handleFiles(e.dataTransfer.files);
-    });
-
-    // TEMPLATES
-    function openTemplatesModal() { document.getElementById('templatesModal').style.display = 'flex'; }
-    function closeTemplatesModal(e) { if(e.target.id === 'templatesModal') e.target.style.display = 'none'; }
-    
-    function applyTemplate(type) {
-        let text = "";
-        if(type === 'venda_direta') {
-            text = `Você é um Vendedor Premium via WhatsApp.
-Seja direto, persuasivo e amigável.
-O cliente acabou de entrar pelo Anúncio.
-
-AÇÕES DISPONÍVEIS:
-Sempre use a tool 'execute_whatsapp_actions' para enviar mídias.
-
-MÁQUINA DE ESTADO:
-1. Saudação: Se ele der Oi, envie "presence: composing", "wait: 2s", text: "Olá! Que bom te ver aqui. O treinamento VIP está disponível com vagas abertas!".
-2. Oferta: Logo em seguida na ferramenta, mande "presence: recording", "wait: 25s", media: "audio_oferta.ogg". Em seguida envie media: "thumb_curso.jpg".
-3. Fechamento: Quando ele perguntar o preço ou "quero comprar", passe o Link do Checkout PIX/Cartão.
-`;
-        } else {
-            text = document.getElementById('promptEditor').value; // fallbsck to keep current or reload from API
-        }
-        
-        if (text) {
-            document.getElementById('promptEditor').value = text;
-            showToast('Template injetado! Não esqueça de Salvar.');
-        }
-        document.getElementById('templatesModal').style.display = 'none';
+    function updateCard(field,value){const card=selectedCard();if(!card)return;card[field]=value;renderCanvas();}
+    function connectText(){const card=selectedCard();if(!card)return;card.tools.push({id:uid('tool'),kind:'text',label:'Texto via tool',content:''});renderCanvas();renderInspector();}
+    function connectAsset(asset){const card=selectedCard();if(!card)return;card.tools.push({id:uid('tool'),kind:'media',label:asset,asset});renderCanvas();renderInspector();}
+    function removeTool(toolId){const card=selectedCard();if(!card)return;card.tools=card.tools.filter(tool=>tool.id!==toolId);renderCanvas();renderInspector();}
+    function updateTool(toolId,field,value){
+      const tool=selectedCard()?.tools.find(item=>item.id===toolId);
+      if(!tool) return;
+      const previousAsset=tool.asset;
+      tool[field]=value;
+      if(tool.kind==='media'&&field==='asset'&&(!tool.label||tool.label===previousAsset)) tool.label=value;
+      renderCanvas();
     }
 
-    // INIT
-    window.onload = () => {
-        loadPrompt();
-        loadAssets();
-    };
-</script>
+    function updateAssetMeta(fileName,field,value){
+      if(!state.assetConfig.files[fileName]) state.assetConfig.files[fileName]={delay_seconds:0,presence:''};
+      state.assetConfig.files[fileName][field]=value;
+    }
+
+    function fileType(name){
+      const lower=String(name||'').toLowerCase();
+      if(['.ogg','.mp3','.wav','.aac','.m4a','.opus'].some(ext=>lower.endsWith(ext))) return 'Audio';
+      if(['.jpg','.jpeg','.png','.gif','.webp'].some(ext=>lower.endsWith(ext))) return 'Imagem';
+      if(['.mp4','.avi','.mov','.mkv'].some(ext=>lower.endsWith(ext))) return 'Video';
+      if(lower.endsWith('.pdf')) return 'PDF';
+      return 'Documento';
+    }
+
+    function renderSidebar(){
+      document.getElementById('tabTools').classList.toggle('active',state.tab==='tools');
+      document.getElementById('tabFiles').classList.toggle('active',state.tab==='files');
+      const selected=selectedCard();
+      if(state.tab==='tools'){
+        let html=`<div class=\"hint\"><div class=\"muted\">${selected?`Card selecionado: ${esc(selected.title||'Sem titulo')}`:'Selecione um card no canvas para ligar uma ferramenta.'}</div></div>`;
+        html+=`<div class=\"stack\"><div class=\"tool\"><strong>Texto via tool</strong><div class=\"muted\">Dispara um texto pronto dentro do card.</div><button class=\"btn\" style=\"margin-top:10px;width:100%\" ${selected?'':'disabled'} onclick=\"connectText()\">Conectar texto</button></div>`;
+        if(state.assets.length){
+          state.assets.forEach(asset=>{
+            const meta=state.assetConfig.files[asset.name]||{};
+            html+=`<div class=\"tool\"><strong>${esc(asset.name)}</strong><div class=\"muted\">${esc(fileType(asset.name))} | delay ${Number(meta.delay_seconds||0)}s</div><button class=\"btn\" style=\"margin-top:10px;width:100%\" ${selected?'':'disabled'} onclick='connectAsset(${jsq(asset.name)})'>Conectar arquivo</button></div>`;
+          });
+        }else{
+          html+=`<div class=\"empty\"><div class=\"muted\">Nenhum arquivo enviado ainda.</div></div>`;
+        }
+        html+=`</div>`;
+        document.getElementById('sidebar').innerHTML=html;
+      }else{
+        let html=`<div class=\"field\"><label>Atraso inicial da primeira resposta</label><input type=\"number\" min=\"0\" value=\"${Number(state.assetConfig.global_initial_delay||0)}\" oninput=\"state.assetConfig.global_initial_delay=Number(this.value||0)\"></div>`;
+        html+=`<label class=\"drop\" id=\"dropZone\"><input id=\"fileInput\" type=\"file\" multiple onchange=\"handleFiles(this.files)\"><strong>Arraste ou clique para enviar arquivos</strong><div class=\"muted\" style=\"margin-top:8px\">Audios, imagens, PDFs e outros arquivos para ligar nos cards.</div></label>`;
+        if(state.assets.length){
+          html+=`<div class=\"stack\" style=\"margin-top:12px\">`;
+          state.assets.forEach(asset=>{
+            const meta=state.assetConfig.files[asset.name]||{delay_seconds:0,presence:''};
+            html+=`<div class=\"item\"><strong>${esc(asset.name)}</strong><div class=\"muted\">${esc(fileType(asset.name))} | ${(asset.size/1024).toFixed(1)} KB</div><div class=\"row\" style=\"margin-top:10px\"><select onchange='updateAssetMeta(${jsq(asset.name)},"presence",this.value)'><option value=\"\" ${meta.presence===''?'selected':''}>Sem status</option><option value=\"composing\" ${meta.presence==='composing'?'selected':''}>Digitando</option><option value=\"recording\" ${meta.presence==='recording'?'selected':''}>Gravando audio</option></select><input type=\"number\" min=\"0\" value=\"${Number(meta.delay_seconds||0)}\" oninput='updateAssetMeta(${jsq(asset.name)},"delay_seconds",Number(this.value||0))'></div><div class=\"row\" style=\"margin-top:10px;justify-content:flex-end\"><button class=\"danger\" onclick='deleteAsset(${jsq(asset.name)})'>Excluir arquivo</button></div></div>`;
+          });
+          html+=`</div>`;
+        }else{
+          html+=`<div class=\"empty\" style=\"margin-top:12px\"><div class=\"muted\">Nenhum arquivo enviado.</div></div>`;
+        }
+        document.getElementById('sidebar').innerHTML=html;
+        bindDropZone();
+      }
+    }
+
+    function renderCanvas(){
+      const mount=document.getElementById('canvas');
+      if(!state.config.cards.length){
+        mount.innerHTML=`<div class=\"empty\"><strong>Nenhum card ainda</strong><div class=\"muted\" style=\"margin-top:8px\">Crie um card e conecte texto ou arquivos pela lateral.</div></div>`;
+        return;
+      }
+      let html=`<div class=\"canvas\">`;
+      state.config.cards.forEach((card,index)=>{
+        html+=`<div class=\"card ${card.id===state.selectedCardId?'selected':''}\"><div class=\"row\" style=\"justify-content:space-between;align-items:flex-start\"><div><strong>${esc(card.title||`Card ${index+1}`)}</strong><div class=\"muted\">${esc(card.trigger||'Sem contexto definido')}</div></div><div class=\"row\"><button class=\"btn\" onclick='moveCard(${jsq(card.id)},"up")'>Subir</button><button class=\"btn\" onclick='moveCard(${jsq(card.id)},"down")'>Descer</button><button class=\"btn\" onclick='selectCard(${jsq(card.id)})'>Editar</button><button class=\"danger\" onclick='removeCard(${jsq(card.id)})'>Excluir</button></div></div><div class=\"muted\" style=\"margin-top:10px\">${esc(card.instruction||'Sem instrucao detalhada')}</div><div class=\"row\" style=\"margin-top:10px\">${card.tools.length?card.tools.map(tool=>`<span class=\"chip\">${tool.kind==='media'?'Arquivo':'Texto'}: ${esc(tool.kind==='media'?tool.asset:tool.label)}</span>`).join(''):'<span class=\"chip\">Sem ferramenta conectada</span>'}</div></div>`;
+      });
+      html+=`</div>`;
+      mount.innerHTML=html;
+    }
+
+    function renderInspector(){
+      const card=selectedCard();
+      if(!card){
+        document.getElementById('inspector').innerHTML=`<div class=\"empty\"><strong>Selecione um card</strong><div class=\"muted\" style=\"margin-top:8px\">As propriedades do card aparecem aqui.</div></div>`;
+        return;
+      }
+      let toolsHtml='';
+      if(card.tools.length){
+        toolsHtml=`<div class=\"stack\">`;
+        card.tools.forEach(tool=>{
+          if(tool.kind==='text'){
+            toolsHtml+=`<div class=\"item\"><div class=\"row\" style=\"justify-content:space-between;align-items:flex-start\"><div><strong>Texto conectado</strong><div class=\"muted\">Texto que o card pode disparar via tool.</div></div><button class=\"danger\" onclick='removeTool(${jsq(tool.id)})'>Remover</button></div><div class=\"field\" style=\"margin-top:10px\"><label>Nome</label><input value=\"${esc(tool.label||'')}\" oninput='updateTool(${jsq(tool.id)},"label",this.value)'></div><div class=\"field\" style=\"margin-bottom:0\"><label>Conteudo</label><textarea oninput='updateTool(${jsq(tool.id)},"content",this.value)'>${esc(tool.content||'')}</textarea></div></div>`;
+          }else{
+            const options=`<option value=\"\">Selecione um arquivo</option>`+state.assets.map(asset=>`<option value=\"${esc(asset.name)}\" ${tool.asset===asset.name?'selected':''}>${esc(asset.name)}</option>`).join('');
+            toolsHtml+=`<div class=\"item\"><div class=\"row\" style=\"justify-content:space-between;align-items:flex-start\"><div><strong>Arquivo conectado</strong><div class=\"muted\">Arquivo que o card pode enviar via tool.</div></div><button class=\"danger\" onclick='removeTool(${jsq(tool.id)})'>Remover</button></div><div class=\"field\" style=\"margin-top:10px\"><label>Nome interno</label><input value=\"${esc(tool.label||'')}\" oninput='updateTool(${jsq(tool.id)},"label",this.value)'></div><div class=\"field\" style=\"margin-bottom:0\"><label>Arquivo ligado</label><select onchange='updateTool(${jsq(tool.id)},"asset",this.value)'>${options}</select></div></div>`;
+          }
+        });
+        toolsHtml+=`</div>`;
+      }else{
+        toolsHtml=`<div class=\"empty\"><div class=\"muted\">Nenhuma ferramenta conectada neste card.</div></div>`;
+      }
+      document.getElementById('inspector').innerHTML=`<div class=\"field\"><label>Titulo do card</label><input value=\"${esc(card.title||'')}\" oninput=\"updateCard('title',this.value)\"></div><div class=\"field\"><label>Quando ativar este card</label><textarea oninput=\"updateCard('trigger',this.value)\">${esc(card.trigger||'')}</textarea></div><div class=\"field\"><label>Instrucao principal do card</label><textarea oninput=\"updateCard('instruction',this.value)\">${esc(card.instruction||'')}</textarea></div><div class=\"field\"><label>Saida desejada apos este card</label><textarea oninput=\"updateCard('output_guidance',this.value)\">${esc(card.output_guidance||'')}</textarea></div><h2 style=\"font-size:16px;margin:8px 0 12px\">Ferramentas conectadas</h2>${toolsHtml}`;
+    }
+
+    function renderAll(){
+      document.getElementById('systemDirective').value=state.config.system_directive||'';
+      renderSidebar();
+      renderCanvas();
+      renderInspector();
+    }
+
+    async function loadFlow(){
+      const response=await fetch('/api/flow-config');
+      const data=await response.json();
+      state.config=normalizeConfig(data.config||{});
+      if(!state.selectedCardId&&state.config.cards.length) state.selectedCardId=state.config.cards[0].id;
+    }
+
+    async function loadAssets(){
+      const response=await fetch('/api/assets');
+      const data=await response.json();
+      state.assets=Array.isArray(data.files)?data.files:[];
+      state.assetConfig={global_initial_delay:Number(data.global_initial_delay||0),files:{}};
+      state.assets.forEach(asset=>{
+        state.assetConfig.files[asset.name]={delay_seconds:Number(asset.delay_seconds||0),presence:String(asset.presence||'')};
+      });
+    }
+
+    async function saveAssetConfig(){
+      await fetch('/api/asset-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({config:state.assetConfig})});
+    }
+
+    async function saveAll(){
+      const button=document.getElementById('saveButton');
+      button.disabled=true;
+      button.textContent='Salvando...';
+      try{
+        state.config.system_directive=document.getElementById('systemDirective').value;
+        await fetch('/api/flow-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({config:state.config})});
+        await saveAssetConfig();
+        toast('Painel salvo com sucesso.');
+      }catch(error){
+        console.error(error);
+        toast('Erro ao salvar o painel.',true);
+      }finally{
+        button.disabled=false;
+        button.textContent='Salvar painel';
+      }
+    }
+
+    async function deleteAsset(fileName){
+      if(!confirm('Excluir este arquivo?')) return;
+      try{
+        await fetch('/api/assets/'+encodeURIComponent(fileName),{method:'DELETE'});
+        state.config.cards.forEach(card=>{card.tools=card.tools.filter(tool=>!(tool.kind==='media'&&tool.asset===fileName));});
+        await loadAssets();
+        renderAll();
+        toast('Arquivo removido.');
+      }catch(error){
+        console.error(error);
+        toast('Nao foi possivel excluir o arquivo.',true);
+      }
+    }
+
+    async function handleFiles(files){
+      if(!files||!files.length) return;
+      try{
+        for(const file of files){
+          const formData=new FormData();
+          formData.append('file',file);
+          await fetch('/api/assets/upload',{method:'POST',body:formData});
+        }
+        await loadAssets();
+        renderAll();
+        toast('Arquivo enviado com sucesso.');
+      }catch(error){
+        console.error(error);
+        toast('Erro ao enviar arquivo.',true);
+      }
+    }
+
+    function bindDropZone(){
+      const zone=document.getElementById('dropZone');
+      if(!zone) return;
+      zone.addEventListener('dragover',event=>{event.preventDefault();zone.classList.add('dragover');});
+      zone.addEventListener('dragleave',()=>zone.classList.remove('dragover'));
+      zone.addEventListener('drop',event=>{event.preventDefault();zone.classList.remove('dragover');handleFiles(event.dataTransfer.files);});
+    }
+
+    async function init(){
+      try{
+        await Promise.all([loadFlow(),loadAssets()]);
+        renderAll();
+      }catch(error){
+        console.error(error);
+        toast('Erro ao carregar o painel.',true);
+      }
+    }
+
+    window.onload=init;
+  </script>
 </body>
 </html>

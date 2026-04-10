@@ -1,23 +1,22 @@
 from __future__ import annotations
 
+import json
 import logging
-import mimetypes
-import os
-import shutil
 import secrets
+import shutil
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, UploadFile, File
+from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 
+from app.agent import HybridAgent, get_system_prompt, normalize_agent_config
 from app.config import get_settings
 from app.flow_engine import FlowEngine
 from app.session_store import SessionStore
 from app.whatsapp_api import WhatsAppApiClient
-from app.agent import HybridAgent, get_system_prompt, PROMPT_FILE
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,14 +33,12 @@ api_client = WhatsAppApiClient(
 )
 agent = HybridAgent(session_store=session_store)
 flow_engine = FlowEngine(
-    flow_file=settings.flow_file,
     session_store=session_store,
     client=api_client,
     public_base_url=settings.public_base_url,
     agent=agent,
 )
 
-# MIME types para que a API de WhatsApp reconheça corretamente
 MIME_MAP = {
     ".ogg": "audio/ogg; codecs=opus",
     ".mp3": "audio/mpeg",
@@ -60,121 +57,155 @@ ASSETS_DIR = Path("assets")
 STATIC_DIR = Path("app/static")
 DATA_DIR = Path("app/data")
 ASSETS_CONFIG_FILE = DATA_DIR / "assets_config.json"
+FLOW_CONFIG_FILE = DATA_DIR / "flow_config.json"
 
-app = FastAPI(title="Robo de Atendimento WhatsApp")
+app = FastAPI(title="Agente de Atendimento WhatsApp")
 security = HTTPBasic()
 
-def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
+
+def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)) -> str:
     correct_username = secrets.compare_digest(credentials.username, settings.admin_user)
     correct_password = secrets.compare_digest(credentials.password, settings.admin_password)
     if not (correct_username and correct_password):
         raise HTTPException(
             status_code=401,
-            detail="Autenticação Incorreta",
+            detail="Autenticacao incorreta",
             headers={"WWW-Authenticate": "Basic"},
         )
     return credentials.username
 
 
-# --- ADMIN ENDPOINTS (Protegidos) ---
+class AssetConfigPayload(BaseModel):
+    config: dict
+
+
+class FlowConfigPayload(BaseModel):
+    config: dict
+
+
+def _default_agent_dashboard_config() -> dict[str, Any]:
+    return normalize_agent_config(
+        {
+            "system_directive": (
+                "Voce e uma atendente comercial no WhatsApp. "
+                "Converse de forma humana, descubra a necessidade do cliente, "
+                "use os arquivos do painel quando fizer sentido e conduza para a venda."
+            ),
+            "cards": [
+                {
+                    "id": "abertura",
+                    "title": "Abertura",
+                    "trigger": "Quando o cliente fizer o primeiro contato ou pedir informacoes",
+                    "instruction": "Cumprimente, gere conforto e mostre que vai orientar com clareza.",
+                    "output_guidance": "Me conta: o que voce quer resolver hoje?",
+                    "tools": [
+                        {
+                            "kind": "text",
+                            "label": "Texto de abertura",
+                            "content": "Oi. Eu vou te explicar certinho e te orientar da melhor forma.",
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin_dashboard(username: str = Depends(verify_credentials)):
-    """Serve a Interface Gráfica Administrativa."""
     html_file = STATIC_DIR / "admin.html"
     if not html_file.exists():
-        raise HTTPException(status_code=404, detail="Painel não encontrado. Crie app/static/admin.html")
-    with open(html_file, "r", encoding="utf-8") as f:
-        return f.read()
+        raise HTTPException(status_code=404, detail="Painel nao encontrado. Crie app/static/admin.html")
+    return html_file.read_text(encoding="utf-8")
 
-class PromptUpdate(BaseModel):
-    prompt: str
 
-class AssetConfigPayload(BaseModel):
-    config: dict
-    prompt: str
+@app.get("/api/flow-config", dependencies=[Depends(verify_credentials)])
+def get_flow_config():
+    if not FLOW_CONFIG_FILE.exists():
+        return {"config": _default_agent_dashboard_config()}
 
-@app.get("/api/prompt", dependencies=[Depends(verify_credentials)])
-def get_prompt():
-    return {"prompt": get_system_prompt()}
+    with FLOW_CONFIG_FILE.open("r", encoding="utf-8") as file:
+        return {"config": normalize_agent_config(json.load(file))}
 
-@app.post("/api/prompt", dependencies=[Depends(verify_credentials)])
-def update_prompt(payload: PromptUpdate):
+
+@app.post("/api/flow-config", dependencies=[Depends(verify_credentials)])
+def update_flow_config(payload: FlowConfigPayload):
     try:
-        PROMPT_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(PROMPT_FILE, "w", encoding="utf-8") as f:
-            f.write(payload.prompt)
+        FLOW_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        normalized_config = normalize_agent_config(payload.config)
+        with FLOW_CONFIG_FILE.open("w", encoding="utf-8") as file:
+            json.dump(normalized_config, file, ensure_ascii=False, indent=2)
         return {"status": "success"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
 
 @app.get("/api/assets", dependencies=[Depends(verify_credentials)])
 def list_assets():
     if not ASSETS_DIR.exists():
-        return {"files": []}
-    files = []
-    
-    # carrega config atual
+        return {"files": [], "global_initial_delay": 0}
+
     config = {}
     if ASSETS_CONFIG_FILE.exists():
-        import json
-        with open(ASSETS_CONFIG_FILE, "r", encoding="utf-8") as f:
-            config = json.load(f)
+        with ASSETS_CONFIG_FILE.open("r", encoding="utf-8") as file:
+            config = json.load(file)
 
-    for f in ASSETS_DIR.iterdir():
-        if f.is_file():
-            # append config to each file
-            file_meta = config.get("files", {}).get(f.name, {})
-            files.append({
-                "name": f.name, 
-                "size": f.stat().st_size,
+    files = []
+    for file in ASSETS_DIR.iterdir():
+        if not file.is_file():
+            continue
+        file_meta = config.get("files", {}).get(file.name, {})
+        files.append(
+            {
+                "name": file.name,
+                "size": file.stat().st_size,
                 "delay_seconds": file_meta.get("delay_seconds", 0),
-                "presence": file_meta.get("presence", "")
-            })
+                "presence": file_meta.get("presence", ""),
+            }
+        )
+
     return {
         "files": files,
-        "global_initial_delay": config.get("global_initial_delay", 0)
+        "global_initial_delay": config.get("global_initial_delay", 0),
     }
+
 
 @app.post("/api/asset-config", dependencies=[Depends(verify_credentials)])
 def update_asset_config(payload: AssetConfigPayload):
-    import json
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    with open(ASSETS_CONFIG_FILE, "w", encoding="utf-8") as f:
-        json.dump(payload.config, f, ensure_ascii=False, indent=2)
+    with ASSETS_CONFIG_FILE.open("w", encoding="utf-8") as file:
+        json.dump(payload.config, file, ensure_ascii=False, indent=2)
     return {"status": "success"}
+
 
 @app.post("/api/assets/upload", dependencies=[Depends(verify_credentials)])
 def upload_asset(file: UploadFile = File(...)):
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
     file_path = ASSETS_DIR / file.filename
     try:
-        with open(file_path, "wb") as buffer:
+        with file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         return {"status": "success", "filename": file.filename}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
 
 @app.delete("/api/assets/{filename}", dependencies=[Depends(verify_credentials)])
 def delete_asset(filename: str):
     file_path = ASSETS_DIR / filename
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Arquivo não encontrado")
+        raise HTTPException(status_code=404, detail="Arquivo nao encontrado")
     file_path.unlink()
     return {"status": "deleted"}
 
 
-# --- PUBLIC ENDPOINTS ---
-
 @app.get("/assets/{filename}")
 def serve_asset(filename: str) -> FileResponse:
-    """Serve arquivos de assets com Content-Type correto."""
     file_path = ASSETS_DIR / filename
     if not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404, detail="Arquivo nao encontrado.")
 
-    suffix = file_path.suffix.lower()
-    media_type = MIME_MAP.get(suffix, "application/octet-stream")
+    media_type = MIME_MAP.get(file_path.suffix.lower(), "application/octet-stream")
     logger.info("Servindo %s com Content-Type: %s", filename, media_type)
     return FileResponse(path=file_path, media_type=media_type, filename=filename)
 
@@ -182,24 +213,17 @@ def serve_asset(filename: str) -> FileResponse:
 @app.on_event("startup")
 def startup_event() -> None:
     session_store.initialize()
-    flow_engine.load()
-    # Garante que as pastas cruciais existam
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
     STATIC_DIR.mkdir(parents=True, exist_ok=True)
-    get_system_prompt() # Cria o arquivo txt se não existir
-    logger.info("Robo inicializado com fluxo em %s", settings.flow_file)
-    logger.info("Admin Area at /admin")
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    get_system_prompt()
+    logger.info("Robo inicializado em modo agente de atendimento")
+    logger.info("Admin area disponivel em /admin")
 
 
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
-
-
-@app.post("/admin/reload-flows")
-def reload_flows() -> dict[str, str]:
-    flow_engine.reload()
-    return {"status": "reloaded"}
 
 
 @app.post("/webhook")
@@ -224,20 +248,19 @@ def webhook(payload: dict[str, Any], background_tasks: BackgroundTasks) -> dict[
     if message_type not in {"chat", "conversation", "text"}:
         return {"status": "ignored", "reason": f"tipo {message_type!r} nao tratado"}
 
-    # Usa resolvedPhone (telefone real) para enviar mensagens
-    # Usa 'from' (LID) apenas como chave de sessão
     phone = data.get("resolvedPhone") or data.get("from", "")
     session_id = data.get("from", "")
     message_text = data.get("body", "")
 
-    # CTWA (Click to WhatsApp) ad tracking
     ctwa_clid = data.get("ctwaClid", "")
     if ctwa_clid:
-        logger.info("📢 CTWA Click ID detectado: %s | Telefone: %s", ctwa_clid, phone)
-        entry_source = data.get("entryPointConversionSource", "")
-        entry_app = data.get("entryPointConversionApp", "")
-        ad_title = data.get("adTitle", "")
-        logger.info("   ↳ Origem: %s | App: %s | Anúncio: %s", entry_source, entry_app, ad_title)
+        logger.info("CTWA Click ID detectado: %s | Telefone: %s", ctwa_clid, phone)
+        logger.info(
+            "Origem: %s | App: %s | Anuncio: %s",
+            data.get("entryPointConversionSource", ""),
+            data.get("entryPointConversionApp", ""),
+            data.get("adTitle", ""),
+        )
 
     if not phone:
         raise HTTPException(status_code=400, detail="Payload sem telefone do remetente.")
@@ -252,8 +275,8 @@ def webhook(payload: dict[str, Any], background_tasks: BackgroundTasks) -> dict[
             message_text=message_text,
             ctwa_clid=ctwa_clid,
         )
-    except Exception as exc:  # pragma: no cover - log de runtime
-        logger.exception("Erro ao colocar webhoook processing task in background")
+    except Exception as exc:  # pragma: no cover
+        logger.exception("Erro ao colocar o processamento do webhook em background")
         return {"status": "error", "detail": str(exc)}
 
     return {"status": "processed"}

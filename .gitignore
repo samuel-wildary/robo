@@ -1,5 +1,12 @@
-.venv/
+ffmpeg.zip
+ffmpeg_folder/
+assets/*.ogg
+assets/*.mp3
+assets/*.mp4
+assets/*.jpg
+assets/*.jpeg
+assets/*.pdf
+app/data/*.json
 __pycache__/
 *.pyc
 .env
-bot.db
